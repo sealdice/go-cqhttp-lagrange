@@ -111,13 +111,6 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 		p1 := p.Get("parent_id").String()
 		p2 := p.Get("name").String()
 		return c.bot.CQGroupFileCreateFolder(p0, p1, p2)
-	case "create_guild_role":
-		p0 := p.Get("guild_id").Uint()
-		p1 := p.Get("name").String()
-		p2 := uint32(p.Get("color").Uint())
-		p3 := p.Get("independent").Bool()
-		p4 := p.Get("initial_users")
-		return c.bot.CQCreateGuildRole(p0, p1, p2, p3, p4)
 	case "delete_essence_msg":
 		p0 := int32(p.Get("message_id").Int())
 		return c.bot.CQDeleteEssenceMessage(p0)
@@ -133,10 +126,6 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 		p0 := p.Get("group_id").Int()
 		p1 := p.Get("folder_id").String()
 		return c.bot.CQGroupFileDeleteFolder(p0, p1)
-	case "delete_guild_role":
-		p0 := p.Get("guild_id").Uint()
-		p1 := p.Get("role_id").Uint()
-		return c.bot.CQDeleteGuildRole(p0, p1)
 	case "delete_msg":
 		p0 := int32(p.Get("message_id").Int())
 		return c.bot.CQDeleteMessage(p0)
@@ -200,32 +189,6 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 		return c.bot.CQGetGroupRootFiles(p0)
 	case "get_group_system_msg":
 		return c.bot.CQGetGroupSystemMessages()
-	case "get_guild_channel_list":
-		p0 := p.Get("guild_id").Uint()
-		p1 := p.Get("no_cache").Bool()
-		return c.bot.CQGetGuildChannelList(p0, p1)
-	case "get_guild_list":
-		return c.bot.CQGetGuildList()
-	case "get_guild_member_list":
-		p0 := p.Get("guild_id").Uint()
-		p1 := p.Get("next_token").String()
-		return c.bot.CQGetGuildMembers(p0, p1)
-	case "get_guild_member_profile":
-		p0 := p.Get("guild_id").Uint()
-		p1 := p.Get("user_id").Uint()
-		return c.bot.CQGetGuildMemberProfile(p0, p1)
-	case "get_guild_meta_by_guest":
-		p0 := p.Get("guild_id").Uint()
-		return c.bot.CQGetGuildMetaByGuest(p0)
-	case "get_guild_msg":
-		p0 := p.Get("message_id").String()
-		p1 := p.Get("no_cache").Bool()
-		return c.bot.CQGetGuildMessage(p0, p1)
-	case "get_guild_roles":
-		p0 := p.Get("guild_id").Uint()
-		return c.bot.CQGetGuildRoles(p0)
-	case "get_guild_service_profile":
-		return c.bot.CQGetGuildServiceProfile()
 	case "get_image":
 		p0 := p.Get("file").String()
 		return c.bot.CQGetImage(p0)
@@ -239,10 +202,6 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 		return c.bot.CQGetStatus(spec)
 	case "get_supported_actions":
 		return c.bot.CQGetSupportedActions(spec)
-	case "get_topic_channel_feeds":
-		p0 := p.Get("guild_id").Uint()
-		p1 := p.Get("channel_id").Uint()
-		return c.bot.CQGetTopicChannelFeeds(p0, p1)
 	case "get_unidirectional_friend_list":
 		return c.bot.CQGetUnidirectionalFriendList()
 	case "mark_msg_as_read":
@@ -256,12 +215,6 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 	case "send_group_sign":
 		p0 := p.Get("group_id").Int()
 		return c.bot.CQSendGroupSign(p0)
-	case "send_guild_channel_msg":
-		p0 := p.Get("guild_id").Uint()
-		p1 := p.Get("channel_id").Uint()
-		p2 := p.Get("message")
-		p3 := p.Get("auto_escape").Bool()
-		return c.bot.CQSendGuildChannelMessage(p0, p1, p2, p3)
 	case "set_essence_msg":
 		p0 := int32(p.Get("message_id").Int())
 		return c.bot.CQSetEssenceMessage(p0)
@@ -344,12 +297,6 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 			p1 = pt.Bool()
 		}
 		return c.bot.CQSetGroupWholeBan(p0, p1)
-	case "set_guild_member_role":
-		p0 := p.Get("guild_id").Uint()
-		p1 := p.Get("set").Bool()
-		p2 := p.Get("role_id").Uint()
-		p3 := p.Get("users")
-		return c.bot.CQSetGuildMemberRole(p0, p1, p2, p3)
 	case "set_qq_profile":
 		p0 := p.Get("nickname")
 		p1 := p.Get("company")
@@ -357,13 +304,6 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 		p3 := p.Get("college")
 		p4 := p.Get("personal_note")
 		return c.bot.CQSetQQProfile(p0, p1, p2, p3, p4)
-	case "update_guild_role":
-		p0 := p.Get("guild_id").Uint()
-		p1 := p.Get("role_id").Uint()
-		p2 := p.Get("name").String()
-		p3 := uint32(p.Get("color").Uint())
-		p4 := p.Get("indepedent").Bool()
-		return c.bot.CQModifyRoleInGuild(p0, p1, p2, p3, p4)
 	case "upload_group_file":
 		p0 := p.Get("group_id").Int()
 		p1 := p.Get("file").String()

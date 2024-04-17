@@ -70,13 +70,6 @@ func GetPrivateMessageByGlobalID(id int32) (*StoredPrivateMessage, error) {
 	return backends[0].GetPrivateMessageByGlobalID(id)
 }
 
-func GetGuildChannelMessageByID(id string) (*StoredGuildChannelMessage, error) {
-	if len(backends) == 0 {
-		return nil, DatabaseDisabledError
-	}
-	return backends[0].GetGuildChannelMessageByID(id)
-}
-
 func InsertGroupMessage(m *StoredGroupMessage) error {
 	for _, b := range backends {
 		if err := b.InsertGroupMessage(m); err != nil {
@@ -89,15 +82,6 @@ func InsertGroupMessage(m *StoredGroupMessage) error {
 func InsertPrivateMessage(m *StoredPrivateMessage) error {
 	for _, b := range backends {
 		if err := b.InsertPrivateMessage(m); err != nil {
-			return errors.Wrap(err, "insert message to backend error")
-		}
-	}
-	return nil
-}
-
-func InsertGuildChannelMessage(m *StoredGuildChannelMessage) error {
-	for _, b := range backends {
-		if err := b.InsertGuildChannelMessage(m); err != nil {
 			return errors.Wrap(err, "insert message to backend error")
 		}
 	}

@@ -18,7 +18,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/RomiChan/syncx"
 	"github.com/pkg/errors"
-	"github.com/segmentio/asm/base64"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/image/webp"
 
@@ -39,7 +38,6 @@ type CQBot struct {
 
 	friendReqCache   syncx.Map[string, *client.NewFriendRequest]
 	tempSessionCache syncx.Map[int64, *client.TempSessionInfo]
-	nextTokenCache   *utils.Cache[*guildMemberPageToken]
 }
 
 // Event 事件
@@ -72,8 +70,7 @@ func (e *Event) JSONString() string {
 // NewQQBot 初始化一个QQBot实例
 func NewQQBot(cli *client.QQClient) *CQBot {
 	bot := &CQBot{
-		Client:         cli,
-		nextTokenCache: utils.NewCache[*guildMemberPageToken](time.Second * 10),
+		Client: cli,
 	}
 	bot.Client.PrivateMessageEvent.Subscribe(bot.privateMessageEvent)
 	bot.Client.GroupMessageEvent.Subscribe(bot.groupMessageEvent)
@@ -82,12 +79,6 @@ func NewQQBot(cli *client.QQClient) *CQBot {
 		bot.Client.SelfGroupMessageEvent.Subscribe(bot.groupMessageEvent)
 	}
 	bot.Client.TempMessageEvent.Subscribe(bot.tempMessageEvent)
-	bot.Client.GuildService.OnGuildChannelMessage(bot.guildChannelMessageEvent)
-	bot.Client.GuildService.OnGuildMessageReactionsUpdated(bot.guildMessageReactionsUpdatedEvent)
-	bot.Client.GuildService.OnGuildMessageRecalled(bot.guildChannelMessageRecalledEvent)
-	bot.Client.GuildService.OnGuildChannelUpdated(bot.guildChannelUpdatedEvent)
-	bot.Client.GuildService.OnGuildChannelCreated(bot.guildChannelCreatedEvent)
-	bot.Client.GuildService.OnGuildChannelDestroyed(bot.guildChannelDestroyedEvent)
 	bot.Client.GroupMuteEvent.Subscribe(bot.groupMutedEvent)
 	bot.Client.GroupMessageRecalledEvent.Subscribe(bot.groupRecallEvent)
 	bot.Client.GroupNotifyEvent.Subscribe(bot.groupNotifyEvent)
@@ -224,8 +215,6 @@ func (bot *CQBot) uploadMedia(target message.Source, elements []message.IMessage
 		source = "群"
 	case message.SourcePrivate:
 		source = "私聊"
-	case message.SourceGuildChannel:
-		source = "频道"
 	}
 
 	for i, m := range elements {
@@ -407,42 +396,6 @@ func (bot *CQBot) SendPrivateMessage(target int64, groupID int64, m *message.Sen
 	return id
 }
 
-// SendGuildChannelMessage 发送频道消息
-func (bot *CQBot) SendGuildChannelMessage(guildID, channelID uint64, m *message.SendingMessage) string {
-	newElem := make([]message.IMessageElement, 0, len(m.Elements))
-	source := message.Source{
-		SourceType:  message.SourceGuildChannel,
-		PrimaryID:   int64(guildID),
-		SecondaryID: int64(channelID),
-	}
-	m.Elements = bot.uploadMedia(source, m.Elements)
-	for _, e := range m.Elements {
-		switch i := e.(type) {
-		case *message.MusicShareElement:
-			bot.Client.SendGuildMusicShare(guildID, channelID, i)
-			return "-1" // todo: fix this
-
-		case *message.VoiceElement, *msg.Poke:
-			log.Warnf("警告: 频道暂不支持发送 %v 消息", i.Type().String())
-			continue
-		}
-		newElem = append(newElem, e)
-	}
-	if len(newElem) == 0 {
-		log.Warnf("频道消息发送失败: 消息为空.")
-		return ""
-	}
-	m.Elements = newElem
-	bot.checkMedia(newElem, bot.Client.Uin)
-	ret, err := bot.Client.GuildService.SendGuildChannelMessage(guildID, channelID, m)
-	if err != nil {
-		log.Warnf("频道消息发送失败: %v", err)
-		return ""
-	}
-	// todo: insert db
-	return fmt.Sprintf("%v-%v", ret.Id, ret.InternalId)
-}
-
 // InsertGroupMessage 群聊消息入数据库
 func (bot *CQBot) InsertGroupMessage(m *message.GroupMessage, source message.Source) int32 {
 	t := &message.SendingMessage{Elements: m.Elements}
@@ -529,63 +482,6 @@ func (bot *CQBot) InsertPrivateMessage(m *message.PrivateMessage, source message
 	return msg.GlobalID
 }
 
-/*
-// InsertTempMessage 临时消息入数据库
-func (bot *CQBot) InsertTempMessage(target int64, m *message.TempMessage) int32 {
-	val := global.MSG{
-		"message-id": m.Id,
-		// FIXME(InsertTempMessage) InternalId missing
-		"from-group": m.GroupCode,
-		"group-name": m.GroupName,
-		"target":     target,
-		"sender":     m.Sender,
-		"time":       int32(time.Now().Unix()),
-		"message":    ToStringMessage(m.Elements, 0, true),
-	}
-	id := db.ToGlobalID(m.Sender.Uin, m.Id)
-	if bot.db != nil {
-		buf := global.NewBuffer()
-		defer global.PutBuffer(buf)
-		if err := gob.NewEncoder(buf).Encode(val); err != nil {
-			log.Warnf("记录聊天数据时出现错误: %v", err)
-			return -1
-		}
-		if err := bot.db.Put(binary.ToBytes(id), buf.Bytes(), nil); err != nil {
-			log.Warnf("记录聊天数据时出现错误: %v", err)
-			return -1
-		}
-	}
-	return id
-}
-*/
-
-// InsertGuildChannelMessage 频道消息入数据库
-func (bot *CQBot) InsertGuildChannelMessage(m *message.GuildChannelMessage) string {
-	id := encodeGuildMessageID(m.GuildId, m.ChannelId, m.Id, message.SourceGuildChannel)
-	source := message.Source{
-		SourceType: message.SourceGuildChannel,
-		PrimaryID:  int64(m.Sender.TinyId),
-	}
-	msg := &db.StoredGuildChannelMessage{
-		ID: id,
-		Attribute: &db.StoredGuildMessageAttribute{
-			MessageSeq:   m.Id,
-			InternalID:   m.InternalId,
-			SenderTinyID: m.Sender.TinyId,
-			SenderName:   m.Sender.Nickname,
-			Timestamp:    m.Time,
-		},
-		GuildID:   m.GuildId,
-		ChannelID: m.ChannelId,
-		Content:   ToMessageContent(m.Elements, source),
-	}
-	if err := db.InsertGuildChannelMessage(msg); err != nil {
-		log.Warnf("记录聊天数据时出现错误: %v", err)
-		return ""
-	}
-	return msg.ID
-}
-
 func (bot *CQBot) event(typ string, others global.MSG) *event {
 	ev := new(event)
 	post, detail, ok := strings.Cut(typ, "/")
@@ -653,31 +549,4 @@ func encodeMessageID(target int64, seq int32) string {
 		w.WriteUInt64(uint64(target))
 		w.WriteUInt32(uint32(seq))
 	}))
-}
-
-// encodeGuildMessageID 将频道信息编码为字符串
-// 当信息来源为 Channel 时 primaryID 为 guildID , subID 为 channelID
-// 当信息来源为 Direct 时 primaryID 为 guildID , subID 为 tinyID
-func encodeGuildMessageID(primaryID, subID, seq uint64, source message.SourceType) string {
-	return base64.StdEncoding.EncodeToString(binary.NewWriterF(func(w *binary.Writer) {
-		w.WriteByte(byte(source))
-		w.WriteUInt64(primaryID)
-		w.WriteUInt64(subID)
-		w.WriteUInt64(seq)
-	}))
-}
-
-func decodeGuildMessageID(id string) (source message.Source, seq uint64) {
-	b, _ := base64.StdEncoding.DecodeString(id)
-	if len(b) < 25 {
-		return
-	}
-	r := binary.NewReader(b)
-	source = message.Source{
-		SourceType:  message.SourceType(r.ReadByte()),
-		PrimaryID:   r.ReadInt64(),
-		SecondaryID: r.ReadInt64(),
-	}
-	seq = uint64(r.ReadInt64())
-	return
 }

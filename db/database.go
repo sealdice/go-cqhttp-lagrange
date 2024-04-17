@@ -19,15 +19,11 @@ type (
 		GetGroupMessageByGlobalID(int32) (*StoredGroupMessage, error)
 		// GetPrivateMessageByGlobalID 通过 GlobalID 来获取私聊消息
 		GetPrivateMessageByGlobalID(int32) (*StoredPrivateMessage, error)
-		// GetGuildChannelMessageByID 通过 ID 来获取频道消息
-		GetGuildChannelMessageByID(string) (*StoredGuildChannelMessage, error)
 
 		// InsertGroupMessage 向数据库写入新的群消息
 		InsertGroupMessage(*StoredGroupMessage) error
 		// InsertPrivateMessage 向数据库写入新的私聊消息
 		InsertPrivateMessage(*StoredPrivateMessage) error
-		// InsertGuildChannelMessage 向数据库写入新的频道消息
-		InsertGuildChannelMessage(*StoredGuildChannelMessage) error
 	}
 
 	StoredMessage interface {
@@ -62,16 +58,6 @@ type (
 		Content    []global.MSG            `bson:"content" yaml:"content"`
 	}
 
-	// StoredGuildChannelMessage 持久化频道消息
-	StoredGuildChannelMessage struct {
-		ID         string                       `bson:"_id" yaml:"-"`
-		Attribute  *StoredGuildMessageAttribute `bson:"attribute" yaml:"-"`
-		GuildID    uint64                       `bson:"guildId" yaml:"-"`
-		ChannelID  uint64                       `bson:"channelId" yaml:"-"`
-		QuotedInfo *QuotedInfo                  `bson:"quotedInfo" yaml:"-"`
-		Content    []global.MSG                 `bson:"content" yaml:"content"`
-	}
-
 	// StoredMessageAttribute 持久化消息属性
 	StoredMessageAttribute struct {
 		MessageSeq int32  `bson:"messageSeq" yaml:"-"`
@@ -79,15 +65,6 @@ type (
 		SenderUin  int64  `bson:"senderUin" yaml:"-"`
 		SenderName string `bson:"senderName" yaml:"-"`
 		Timestamp  int64  `bson:"timestamp" yaml:"-"`
-	}
-
-	// StoredGuildMessageAttribute 持久化频道消息属性
-	StoredGuildMessageAttribute struct {
-		MessageSeq   uint64 `bson:"messageSeq" yaml:"-"`
-		InternalID   uint64 `bson:"internalId" yaml:"-"`
-		SenderTinyID uint64 `bson:"senderTinyId" yaml:"-"`
-		SenderName   string `bson:"senderName" yaml:"-"`
-		Timestamp    int64  `bson:"timestamp" yaml:"-"`
 	}
 
 	// QuotedInfo 引用回复

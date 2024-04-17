@@ -93,28 +93,6 @@ func (ldb *database) GetPrivateMessageByGlobalID(id int32) (*db.StoredPrivateMes
 	return p, nil
 }
 
-func (ldb *database) GetGuildChannelMessageByID(id string) (*db.StoredGuildChannelMessage, error) {
-	v, err := ldb.db.Get([]byte(id), nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "get value error")
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = errors.Errorf("%v", r)
-		}
-	}()
-	r, err := newReader(utils.B2S(v))
-	if err != nil {
-		return nil, err
-	}
-	switch r.uvarint() {
-	case guildChannel:
-		return r.readStoredGuildChannelMessage(), nil
-	default:
-		return nil, errors.New("unknown message flag")
-	}
-}
-
 func (ldb *database) InsertGroupMessage(msg *db.StoredGroupMessage) error {
 	w := newWriter()
 	w.uvarint(group)
@@ -128,13 +106,5 @@ func (ldb *database) InsertPrivateMessage(msg *db.StoredPrivateMessage) error {
 	w.uvarint(private)
 	w.writeStoredPrivateMessage(msg)
 	err := ldb.db.Put(binary.ToBytes(msg.GlobalID), w.bytes(), nil)
-	return errors.Wrap(err, "put data error")
-}
-
-func (ldb *database) InsertGuildChannelMessage(msg *db.StoredGuildChannelMessage) error {
-	w := newWriter()
-	w.uvarint(guildChannel)
-	w.writeStoredGuildChannelMessage(msg)
-	err := ldb.db.Put(utils.S2B(msg.ID), w.bytes(), nil)
 	return errors.Wrap(err, "put data error")
 }

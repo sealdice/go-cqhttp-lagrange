@@ -27,15 +27,6 @@ func FeedContentsToArrayMessage(contents []topic.IFeedRichContentElement) []glob
 				"type": "face",
 				"data": global.MSG{"id": elem.Id},
 			}
-		case *topic.ChannelQuoteElement:
-			m = global.MSG{
-				"type": "channel_quote",
-				"data": global.MSG{
-					"guild_id":     fU64(elem.GuildId),
-					"channel_id":   fU64(elem.ChannelId),
-					"display_text": elem.DisplayText,
-				},
-			}
 		case *topic.UrlQuoteElement:
 			m = global.MSG{
 				"type": "url_quote",

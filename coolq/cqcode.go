@@ -182,11 +182,6 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 				Type: "image",
 				Data: data,
 			}
-		case *message.GuildImageElement:
-			data := pairs{
-				{K: "file", V: hex.EncodeToString(o.Md5) + ".image"},
-				{K: "url", V: o.Url},
-			}
 			m = msg.Element{
 				Type: "image",
 				Data: data,
@@ -350,11 +345,6 @@ func ToMessageContent(e []message.IMessageElement, source message.Source) (r []g
 			m = global.MSG{
 				"type": "image",
 				"data": data,
-			}
-		case *message.GuildImageElement:
-			m = global.MSG{
-				"type": "image",
-				"data": global.MSG{"file": hex.EncodeToString(o.Md5) + ".image", "url": o.Url},
 			}
 		case *message.FriendImageElement:
 			data := global.MSG{"file": hex.EncodeToString(o.Md5) + ".image", "url": o.Url}
@@ -971,13 +961,6 @@ func (bot *CQBot) makeImageOrVideoElem(elem msg.Element, video bool, sourceType 
 		b, _ := os.ReadFile(rawPath)
 		return bot.readVideoCache(b), nil
 	}
-	// 目前频道内上传的图片均无法被查询到, 需要单独处理
-	if sourceType == message.SourceGuildChannel {
-		cacheFile := path.Join(global.ImagePath, "guild-images", f)
-		if global.PathExists(cacheFile) {
-			return &msg.LocalImage{File: cacheFile}, nil
-		}
-	}
 	if strings.HasSuffix(f, ".image") {
 		hash, err := hex.DecodeString(strings.TrimSuffix(f, ".image"))
 		if err == nil {
@@ -1025,13 +1008,6 @@ func (bot *CQBot) readImageCache(b []byte, sourceType message.SourceType) (messa
 	switch sourceType { // nolint:exhaustive
 	case message.SourceGroup:
 		rsp, err = bot.Client.QueryGroupImage(int64(rand.Uint32()), hash, size)
-	case message.SourceGuildChannel:
-		if len(bot.Client.GuildService.Guilds) == 0 {
-			err = errors.New("cannot query guild image: not any joined guild")
-			break
-		}
-		guild := bot.Client.GuildService.Guilds[0]
-		rsp, err = bot.Client.GuildService.QueryImage(guild.GuildId, guild.Channels[0].ChannelId, hash, uint64(size))
 	default:
 		rsp, err = bot.Client.QueryFriendImage(int64(rand.Uint32()), hash, size)
 	}

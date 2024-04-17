@@ -68,35 +68,6 @@ func (r *reader) readStoredPrivateMessage() *db.StoredPrivateMessage {
 	return x
 }
 
-func (w *writer) writeStoredGuildChannelMessage(x *db.StoredGuildChannelMessage) {
-	if x == nil {
-		w.nil()
-		return
-	}
-	w.coder(coderStruct)
-	w.string(x.ID)
-	w.writeStoredGuildMessageAttribute(x.Attribute)
-	w.uint64(x.GuildID)
-	w.uint64(x.ChannelID)
-	w.writeQuotedInfo(x.QuotedInfo)
-	w.arrayMsg(x.Content)
-}
-
-func (r *reader) readStoredGuildChannelMessage() *db.StoredGuildChannelMessage {
-	coder := r.coder()
-	if coder == coderNil {
-		return nil
-	}
-	x := &db.StoredGuildChannelMessage{}
-	x.ID = r.string()
-	x.Attribute = r.readStoredGuildMessageAttribute()
-	x.GuildID = r.uint64()
-	x.ChannelID = r.uint64()
-	x.QuotedInfo = r.readQuotedInfo()
-	x.Content = r.arrayMsg()
-	return x
-}
-
 func (w *writer) writeStoredMessageAttribute(x *db.StoredMessageAttribute) {
 	if x == nil {
 		w.nil()
@@ -119,33 +90,6 @@ func (r *reader) readStoredMessageAttribute() *db.StoredMessageAttribute {
 	x.MessageSeq = r.int32()
 	x.InternalID = r.int32()
 	x.SenderUin = r.int64()
-	x.SenderName = r.string()
-	x.Timestamp = r.int64()
-	return x
-}
-
-func (w *writer) writeStoredGuildMessageAttribute(x *db.StoredGuildMessageAttribute) {
-	if x == nil {
-		w.nil()
-		return
-	}
-	w.coder(coderStruct)
-	w.uint64(x.MessageSeq)
-	w.uint64(x.InternalID)
-	w.uint64(x.SenderTinyID)
-	w.string(x.SenderName)
-	w.int64(x.Timestamp)
-}
-
-func (r *reader) readStoredGuildMessageAttribute() *db.StoredGuildMessageAttribute {
-	coder := r.coder()
-	if coder == coderNil {
-		return nil
-	}
-	x := &db.StoredGuildMessageAttribute{}
-	x.MessageSeq = r.uint64()
-	x.InternalID = r.uint64()
-	x.SenderTinyID = r.uint64()
 	x.SenderName = r.string()
 	x.Timestamp = r.int64()
 	return x
