@@ -207,8 +207,6 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 	case "mark_msg_as_read":
 		p0 := int32(p.Get("message_id").Int())
 		return c.bot.CQMarkMessageAsRead(p0)
-	case "qidian_get_account_info":
-		return c.bot.CQGetQiDianAccountInfo()
 	case "reload_event_filter":
 		p0 := p.Get("file").String()
 		return c.bot.CQReloadEventFilter(p0)

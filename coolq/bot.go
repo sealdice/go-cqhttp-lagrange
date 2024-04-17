@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/LagrangeDev/LagrangeGo/entity"
+	"github.com/Mrs4s/go-cqhttp/utils"
 	"image/png"
 	"os"
 	"runtime/debug"
@@ -12,10 +14,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client"
-	"github.com/Mrs4s/MiraiGo/message"
-	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/LagrangeDev/LagrangeGo/client"
+	"github.com/LagrangeDev/LagrangeGo/message"
 	"github.com/RomiChan/syncx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -382,8 +382,8 @@ func (bot *CQBot) SendPrivateMessage(target int64, groupID int64, m *message.Sen
 			}
 		}
 	case unidirectionalFriendExists(): // 单向好友
-		msg := bot.Client.SendPrivateMessage(target, m)
-		if msg != nil {
+		msg, err := bot.Client.SendPrivateMessage(target, m)
+		if err == nil {
 			id = bot.InsertPrivateMessage(msg, source)
 		}
 	default:
@@ -427,8 +427,8 @@ func (bot *CQBot) InsertGroupMessage(m *message.GroupMessage, source message.Sou
 		reply := replyElem.(*message.ReplyElement)
 		msg.SubType = "quote"
 		msg.QuotedInfo = &db.QuotedInfo{
-			PrevID:        encodeMessageID(m.GroupCode, reply.ReplySeq),
-			PrevGlobalID:  db.ToGlobalID(m.GroupCode, reply.ReplySeq),
+			PrevID:        encodeMessageID(int64(m.GroupCode), reply.ReplySeq),
+			PrevGlobalID:  db.ToGlobalID(int64(m.GroupCode), reply.ReplySeq),
 			QuotedContent: ToMessageContent(reply.Elements, source),
 		}
 	}
@@ -447,21 +447,21 @@ func (bot *CQBot) InsertPrivateMessage(m *message.PrivateMessage, source message
 		return ok
 	})
 	msg := &db.StoredPrivateMessage{
-		ID:       encodeMessageID(m.Sender.Uin, m.Id),
-		GlobalID: db.ToGlobalID(m.Sender.Uin, m.Id),
+		ID:       encodeMessageID(int64(m.Sender.Uin), m.Id),
+		GlobalID: db.ToGlobalID(int64(m.Sender.Uin), m.Id),
 		SubType:  "normal",
 		Attribute: &db.StoredMessageAttribute{
 			MessageSeq: m.Id,
 			InternalID: m.InternalId,
-			SenderUin:  m.Sender.Uin,
-			SenderName: m.Sender.DisplayName(),
+			SenderUin:  int64(m.Sender.Uin),
+			SenderName: m.Sender.Nickname,
 			Timestamp:  int64(m.Time),
 		},
 		SessionUin: func() int64 {
-			if m.Sender.Uin == m.Self {
+			if int64(m.Sender.Uin) == m.Self {
 				return m.Target
 			}
-			return m.Sender.Uin
+			return int64(m.Sender.Uin)
 		}(),
 		TargetUin: m.Target,
 		Content:   ToMessageContent(m.Elements, source),
@@ -470,8 +470,8 @@ func (bot *CQBot) InsertPrivateMessage(m *message.PrivateMessage, source message
 		reply := replyElem.(*message.ReplyElement)
 		msg.SubType = "quote"
 		msg.QuotedInfo = &db.QuotedInfo{
-			PrevID:        encodeMessageID(reply.Sender, reply.ReplySeq),
-			PrevGlobalID:  db.ToGlobalID(reply.Sender, reply.ReplySeq),
+			PrevID:        encodeMessageID(int64(reply.Sender), reply.ReplySeq),
+			PrevGlobalID:  db.ToGlobalID(int64(reply.Sender), reply.ReplySeq),
 			QuotedContent: ToMessageContent(reply.Elements, source),
 		}
 	}
@@ -532,15 +532,15 @@ func (bot *CQBot) dispatch(ev *event) {
 	}
 }
 
-func formatGroupName(group *client.GroupInfo) string {
-	return fmt.Sprintf("%s(%d)", group.Name, group.Code)
+func formatGroupName(group *entity.Group) string {
+	return fmt.Sprintf("%s(%d)", group.GroupName, group.GroupUin)
 }
 
-func formatMemberName(mem *client.GroupMemberInfo) string {
+func formatMemberName(mem *entity.GroupMember) string {
 	if mem == nil {
 		return "未知"
 	}
-	return fmt.Sprintf("%s(%d)", mem.DisplayName(), mem.Uin)
+	return fmt.Sprintf("%s(%d)", mem.MemberName, mem.Uin)
 }
 
 // encodeMessageID 临时先这样, 暂时用不上

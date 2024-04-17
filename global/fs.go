@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
+	"github.com/Mrs4s/go-cqhttp/utils"
 	"net/netip"
 	"net/url"
 	"os"
@@ -12,7 +13,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/Mrs4s/MiraiGo/utils"
 	b14 "github.com/fumiama/go-base16384"
 	"github.com/segmentio/asm/base64"
 	log "github.com/sirupsen/logrus"

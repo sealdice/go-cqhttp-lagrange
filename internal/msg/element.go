@@ -3,10 +3,9 @@ package msg
 
 import (
 	"bytes"
+	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 	"strings"
 	"unicode/utf8"
-
-	"github.com/Mrs4s/MiraiGo/binary"
 )
 
 // @@@ CQ码转义处理 @@@

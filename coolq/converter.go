@@ -1,11 +1,11 @@
 package coolq
 
 import (
+	"github.com/LagrangeDev/LagrangeGo/message"
 	"strconv"
 	"strings"
 
-	"github.com/Mrs4s/MiraiGo/client"
-	"github.com/Mrs4s/MiraiGo/message"
+	"github.com/LagrangeDev/LagrangeGo/client"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Mrs4s/go-cqhttp/global"

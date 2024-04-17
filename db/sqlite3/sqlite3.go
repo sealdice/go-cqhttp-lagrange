@@ -1,6 +1,7 @@
 package sqlite3
 
 import (
+	"github.com/Mrs4s/go-cqhttp/utils"
 	"hash/crc64"
 	"os"
 	"path"
@@ -12,9 +13,6 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/utils"
 
 	"github.com/Mrs4s/go-cqhttp/db"
 )

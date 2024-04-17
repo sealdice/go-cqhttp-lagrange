@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/Mrs4s/go-cqhttp/utils"
 	"io"
 	"net"
 	"net/http"
@@ -19,7 +20,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"gopkg.in/yaml.v3"

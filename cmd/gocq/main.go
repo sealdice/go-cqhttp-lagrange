@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client"
+	"github.com/LagrangeDev/LagrangeGo/client"
+	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 	para "github.com/fumiama/go-hide-param"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/pkg/errors"
@@ -34,15 +34,6 @@ import (
 	"github.com/Mrs4s/go-cqhttp/modules/servers"
 	"github.com/Mrs4s/go-cqhttp/server"
 )
-
-// 允许通过配置文件设置的状态列表
-var allowStatus = [...]client.UserOnlineStatus{
-	client.StatusOnline, client.StatusAway, client.StatusInvisible, client.StatusBusy,
-	client.StatusListening, client.StatusConstellation, client.StatusWeather, client.StatusMeetSpring,
-	client.StatusTimi, client.StatusEatChicken, client.StatusLoving, client.StatusWangWang, client.StatusCookedRice,
-	client.StatusStudy, client.StatusStayUp, client.StatusPlayBall, client.StatusSignal, client.StatusStudyOnline,
-	client.StatusGaming, client.StatusVacationing, client.StatusWatchingTV, client.StatusFitness,
-}
 
 // InitBase 解析参数并检测
 //
@@ -231,14 +222,8 @@ func LoginInteract() {
 	versionFile := path.Join(global.VersionsPath, fmt.Sprint(int(cli.Device().Protocol))+".json")
 	if global.PathExists(versionFile) {
 		b, err := os.ReadFile(versionFile)
-		if err != nil {
-			log.Warnf("从文件 %s 读取本地版本信息文件出错.", versionFile)
-			os.Exit(0)
-		}
-		err = cli.Device().Protocol.Version().UpdateFromJson(b)
-		if err != nil {
-			log.Warnf("从文件 %s 解析本地版本信息出错: %v", versionFile, err)
-			os.Exit(0)
+		if err == nil {
+			_ = cli.Device().Protocol.Version().UpdateFromJson(b)
 		}
 		log.Infof("从文件 %s 读取协议版本 %v.", versionFile, cli.Device().Protocol.Version())
 	}
@@ -297,11 +282,7 @@ func LoginInteract() {
 					log.Infof("如果登录时出现版本过低错误, 可尝试使用 -update-protocol 参数启动")
 				case !isTokenLogin:
 					_ = device.Protocol.Version().UpdateFromJson(remoteVersion)
-					err := os.WriteFile(versionFile, remoteVersion, 0644)
 					log.Infof("协议版本已更新: %s -> %s", currentVersionName, remoteVersionName)
-					if err != nil {
-						log.Warnln("更新协议版本缓存文件", versionFile, "失败:", err)
-					}
 				default:
 					log.Infof("检测到协议更新: %s -> %s", currentVersionName, remoteVersionName)
 					log.Infof("由于使用了会话缓存, 无法自动更新协议, 请删除缓存后重试")
@@ -324,7 +305,7 @@ func LoginInteract() {
 	}
 	var times uint = 1 // 重试次数
 	var reLoginLock sync.Mutex
-	cli.DisconnectedEvent.Subscribe(func(_ *client.QQClient, e *client.ClientDisconnectedEvent) {
+	cli.DisconnectedEvent.Subscribe(func(q *client.QQClient, e *client.ClientDisconnectedEvent) {
 		reLoginLock.Lock()
 		defer reLoginLock.Unlock()
 		times = 1
@@ -436,8 +417,7 @@ func PasswordHashDecrypt(encryptedPasswordHash string, key []byte) ([]byte, erro
 
 func newClient() *client.QQClient {
 	c := client.NewClientEmpty()
-	c.UseFragmentMessage = base.ForceFragmented
-	c.OnServerUpdated(func(_ *client.QQClient, _ *client.ServerUpdatedEvent) bool {
+	c.OnServerUpdated(func(bot *client.QQClient, e *client.ServerUpdatedEvent) bool {
 		if !base.UseSSOAddress {
 			log.Infof("收到服务器地址更新通知, 根据配置文件已忽略.")
 			return false
@@ -469,7 +449,7 @@ func getRemoteLatestProtocolVersion(protocolType int) ([]byte, error) {
 	}
 	response, err := download.Request{URL: url}.Bytes()
 	if err != nil {
-		return download.Request{URL: "https://mirror.ghproxy.com/" + url}.Bytes()
+		return download.Request{URL: "https://ghproxy.com/" + url}.Bytes()
 	}
 	return response, nil
 }

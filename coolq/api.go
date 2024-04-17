@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+
 	"math"
 	"os"
 	"path"
@@ -14,10 +15,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client"
-	"github.com/Mrs4s/MiraiGo/message"
-	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/LagrangeDev/LagrangeGo/client"
+	"github.com/LagrangeDev/LagrangeGo/message"
+	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 
@@ -30,6 +30,7 @@ import (
 	"github.com/Mrs4s/go-cqhttp/internal/param"
 	"github.com/Mrs4s/go-cqhttp/modules/filter"
 	"github.com/Mrs4s/go-cqhttp/pkg/onebot"
+	"github.com/Mrs4s/go-cqhttp/utils"
 )
 
 // CQGetLoginInfo 获取登录号信息
@@ -41,29 +42,17 @@ func (bot *CQBot) CQGetLoginInfo() global.MSG {
 	return OK(global.MSG{"user_id": bot.Client.Uin, "nickname": bot.Client.Nickname})
 }
 
-// CQGetQiDianAccountInfo 获取企点账号信息
-// @route(qidian_get_account_info)
-func (bot *CQBot) CQGetQiDianAccountInfo() global.MSG {
-	if bot.Client.QiDian == nil {
-		return Failed(100, "QIDIAN_PROTOCOL_REQUEST", "请使用企点协议")
-	}
-	return OK(global.MSG{
-		"master_id":   bot.Client.QiDian.MasterUin,
-		"ext_name":    bot.Client.QiDian.ExtName,
-		"create_time": bot.Client.QiDian.CreateTime,
-	})
-}
-
 // CQGetFriendList 获取好友列表
 //
 // https://git.io/Jtz1L
 // @route(get_friend_list)
 func (bot *CQBot) CQGetFriendList(spec *onebot.Spec) global.MSG {
-	fs := make([]global.MSG, 0, len(bot.Client.FriendList))
-	for _, f := range bot.Client.FriendList {
+	friendList, _ := bot.Client.GetFriendsData()
+	fs := make([]global.MSG, 0, len(friendList))
+	for _, f := range friendList {
 		fs = append(fs, global.MSG{
 			"nickname": f.Nickname,
-			"remark":   f.Remark,
+			"remark":   f.Remarks,
 			"user_id":  spec.ConvertID(f.Uin),
 		})
 	}
@@ -406,21 +395,6 @@ func (bot *CQBot) CQGroupFileDeleteFile(groupID int64, id string, busID int32) g
 		return Failed(200, "FILE_SYSTEM_API_ERROR", res)
 	}
 	return OK(nil)
-}
-
-// CQGetWordSlices 隐藏API-获取中文分词
-//
-// https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E4%B8%AD%E6%96%87%E5%88%86%E8%AF%8D-%E9%9A%90%E8%97%8F-api
-// @route(.get_word_slices)
-func (bot *CQBot) CQGetWordSlices(content string) global.MSG {
-	slices, err := bot.Client.GetWordSegmentation(content)
-	if err != nil {
-		return Failed(100, "WORD_SEGMENTATION_API_ERROR", err.Error())
-	}
-	for i := 0; i < len(slices); i++ {
-		slices[i] = strings.ReplaceAll(slices[i], "\u0000", "")
-	}
-	return OK(global.MSG{"slices": slices})
 }
 
 // CQSendMessage 发送消息
