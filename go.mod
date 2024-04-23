@@ -4,9 +4,9 @@ go 1.20
 
 require (
 	github.com/FloatTech/sqlite v1.6.3
-	github.com/LagrangeDev/LagrangeGo v0.0.0-20240417100118-966f6c6c0a52
+	github.com/LagrangeDev/LagrangeGo v0.0.0-20240423105733-105692cf8efd
 	github.com/Microsoft/go-winio v0.6.2-0.20230724192519-b29bbd58a65a
-	github.com/RomiChan/syncx v0.0.0-20221202055724-5f842c53020e
+	github.com/RomiChan/syncx v0.0.0-20240418144900-b7402ffdebc7
 	github.com/RomiChan/websocket v1.4.3-0.20220227141055-9b2c6168c9c5
 	github.com/fumiama/go-base16384 v1.7.0
 	github.com/fumiama/go-hide-param v0.1.4
