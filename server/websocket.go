@@ -239,7 +239,7 @@ func (c *websocketClient) connect(typ, addr string, conptr **wsConn) {
 	log.Infof("开始尝试连接到反向WebSocket %s服务器: %v", typ, addr)
 	header := http.Header{
 		"X-Client-Role": []string{typ},
-		"X-Self-ID":     []string{strconv.FormatInt(c.bot.Client.Uin, 10)},
+		"X-Self-ID":     []string{strconv.FormatInt(int64(c.bot.Client.Uin), 10)},
 		"User-Agent":    []string{"CQHttp/4.15.0"},
 	}
 	if c.token != "" {
