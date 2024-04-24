@@ -20,6 +20,14 @@ github.com/LagrangeDev/LagrangeGo v0.0.0-20240421014250-c9520d2d96c7 h1:csU90ZoW
 github.com/LagrangeDev/LagrangeGo v0.0.0-20240421014250-c9520d2d96c7/go.mod h1:EAs5nU3Oq/zHsJt2gkWOl8TodHPphI+ELXZaj7ht2ZQ=
 github.com/LagrangeDev/LagrangeGo v0.0.0-20240423105733-105692cf8efd h1:35UxgZx6/zoeS9BBXW8t3g9SV6w/LcySdEF0UoMbWIM=
 github.com/LagrangeDev/LagrangeGo v0.0.0-20240423105733-105692cf8efd/go.mod h1:EAs5nU3Oq/zHsJt2gkWOl8TodHPphI+ELXZaj7ht2ZQ=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240423113641-a46c398e835f h1:dpuZWDBtZ7hh44XzieWl8GxnL/4jYq+18Lu6vwbgxPY=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240423113641-a46c398e835f/go.mod h1:EAs5nU3Oq/zHsJt2gkWOl8TodHPphI+ELXZaj7ht2ZQ=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240423121333-8cb157fdd233 h1:UMItCB/AgS8DQNyvjXYnyoj+i9eYFFTEC1fDq/RXgWY=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240423121333-8cb157fdd233/go.mod h1:EAs5nU3Oq/zHsJt2gkWOl8TodHPphI+ELXZaj7ht2ZQ=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240423121727-a429a07c568b h1:CyIAB1l+Zshtbfl+T/KEvBKyUQl37Sdc1bJ3uE66E0M=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240423121727-a429a07c568b/go.mod h1:EAs5nU3Oq/zHsJt2gkWOl8TodHPphI+ELXZaj7ht2ZQ=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240424094005-d8fac1c2dbd2 h1:raTVEJqKyWhmEceVPS66tJj+XqRhNbsZ5GsHZ83D2Ds=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240424094005-d8fac1c2dbd2/go.mod h1:EAs5nU3Oq/zHsJt2gkWOl8TodHPphI+ELXZaj7ht2ZQ=
 github.com/Microsoft/go-winio v0.6.2-0.20230724192519-b29bbd58a65a h1:aU1703IHxupjzipvhu16qYKLMR03e+8WuNR+JMsKfGU=
 github.com/Microsoft/go-winio v0.6.2-0.20230724192519-b29bbd58a65a/go.mod h1:OZqLNXdYJHmx7aqq/T6wAdFEdoGm5nmIfC4kU7M8P8o=
 github.com/RomiChan/protobuf v0.1.1-0.20230204044148-2ed269a2e54d h1:/Xuj3fIiMY2ls1TwvPKmaqQrtJsPY+c9s+0lOScVHd8=

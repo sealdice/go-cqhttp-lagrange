@@ -1,45 +1,46 @@
 package coolq
 
 import (
-	"github.com/LagrangeDev/LagrangeGo/message"
 	"strconv"
 	"strings"
 
-	"github.com/LagrangeDev/LagrangeGo/client"
+	"github.com/LagrangeDev/LagrangeGo/entity"
+	"github.com/LagrangeDev/LagrangeGo/message"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Mrs4s/go-cqhttp/global"
 )
 
-func convertGroupMemberInfo(groupID int64, m *client.GroupMemberInfo) global.MSG {
+func convertGroupMemberInfo(groupID int64, m *entity.GroupMember) global.MSG {
+	// TODO nt 协议依然是获取不到
 	sex := "unknown"
-	if m.Gender == 1 { // unknown = 0xff
-		sex = "female"
-	} else if m.Gender == 0 {
-		sex = "male"
-	}
 	role := "member"
 	switch m.Permission { // nolint:exhaustive
-	case client.Owner:
+	case entity.Owner:
 		role = "owner"
-	case client.Administrator:
+	case entity.Admin:
 		role = "admin"
+	case entity.Member:
+		role = "member"
 	}
 	return global.MSG{
-		"group_id":          groupID,
-		"user_id":           m.Uin,
-		"nickname":          m.Nickname,
-		"card":              m.CardName,
-		"sex":               sex,
-		"age":               0,
-		"area":              "",
-		"join_time":         m.JoinTime,
-		"last_sent_time":    m.LastSpeakTime,
-		"shut_up_timestamp": m.ShutUpTimestamp,
-		"level":             strconv.FormatInt(int64(m.Level), 10),
+		"group_id":       groupID,
+		"user_id":        m.Uin,
+		"nickname":       m.MemberName,
+		"card":           m.MemberCard,
+		"sex":            sex,
+		"age":            0,
+		"area":           "",
+		"join_time":      m.JoinTime,
+		"last_sent_time": m.LastMsgTime,
+		// TODO 这个也获取不到
+		"shut_up_timestamp": 0,
+		"level":             strconv.Itoa(int(m.GroupLevel)),
 		"role":              role,
 		"unfriendly":        false,
-		"title":             m.SpecialTitle,
+		// TODO 等lagrengego
+		"title":             "",
 		"title_expire_time": 0,
 		"card_changeable":   false,
 	}
@@ -48,7 +49,7 @@ func convertGroupMemberInfo(groupID int64, m *client.GroupMemberInfo) global.MSG
 func (bot *CQBot) formatGroupMessage(m *message.GroupMessage) *event {
 	source := message.Source{
 		SourceType: message.SourceGroup,
-		PrimaryID:  m.GroupCode,
+		PrimaryID:  int64(m.GroupCode),
 	}
 	cqm := toStringMessage(m.Elements, source)
 	typ := "message/group/normal"
@@ -80,17 +81,15 @@ func (bot *CQBot) formatGroupMessage(m *message.GroupMessage) *event {
 		gm["sender"].(global.MSG)["nickname"] = "匿名消息"
 		typ = "message/group/anonymous"
 	} else {
-		group := bot.Client.FindGroup(m.GroupCode)
-		mem := group.FindMember(m.Sender.Uin)
+		mem, _ := bot.Client.GetCachedMemberInfo(m.Sender.Uin, m.GroupCode)
 		if mem == nil {
 			log.Warnf("获取 %v 成员信息失败，尝试刷新成员列表", m.Sender.Uin)
-			t, err := bot.Client.GetGroupMembers(group)
+			err := bot.Client.RefreshGroupMembersCache(m.GroupCode)
 			if err != nil {
-				log.Warnf("刷新群 %v 成员列表失败: %v", group.Uin, err)
+				log.Warnf("刷新群 %v 成员列表失败: %v", m.GroupCode, err)
 				return nil
 			}
-			group.Members = t
-			mem = group.FindMember(m.Sender.Uin)
+			mem, _ = bot.Client.GetCachedMemberInfo(m.Sender.Uin, m.GroupCode)
 			if mem == nil {
 				return nil
 			}
@@ -98,15 +97,18 @@ func (bot *CQBot) formatGroupMessage(m *message.GroupMessage) *event {
 		ms := gm["sender"].(global.MSG)
 		role := "member"
 		switch mem.Permission { // nolint:exhaustive
-		case client.Owner:
+		case entity.Owner:
 			role = "owner"
-		case client.Administrator:
+		case entity.Admin:
 			role = "admin"
+		case entity.Member:
+			role = "member"
 		}
 		ms["role"] = role
-		ms["nickname"] = mem.Nickname
-		ms["card"] = mem.CardName
-		ms["title"] = mem.SpecialTitle
+		ms["nickname"] = m.Sender.Nickname
+		ms["card"] = m.Sender.CardName
+		// TODO 获取专属头衔
+		ms["title"] = ""
 	}
 	ev := bot.event(typ, gm)
 	ev.Time = int64(m.Time)
