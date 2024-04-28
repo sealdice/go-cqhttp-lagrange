@@ -1,5 +1,7 @@
 package binary
 
+// from https://github.com/Mrs4s/MiraiGo/tree/master/binary
+
 import (
 	"bytes"
 	"compress/gzip"
