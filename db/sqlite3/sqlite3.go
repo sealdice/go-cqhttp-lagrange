@@ -2,6 +2,7 @@ package sqlite3
 
 import (
 	"github.com/Mrs4s/go-cqhttp/utils"
+	"github.com/Mrs4s/go-cqhttp/utils/binary"
 	"hash/crc64"
 	"os"
 	"path"

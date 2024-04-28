@@ -5,14 +5,16 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/LagrangeDev/LagrangeGo/entity"
-	"github.com/Mrs4s/go-cqhttp/utils"
 	"image/png"
 	"os"
 	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/LagrangeDev/LagrangeGo/entity"
+	"github.com/Mrs4s/go-cqhttp/utils"
+	"github.com/Mrs4s/go-cqhttp/utils/binary"
 
 	"github.com/LagrangeDev/LagrangeGo/client"
 	"github.com/LagrangeDev/LagrangeGo/message"

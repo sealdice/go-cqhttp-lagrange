@@ -3,6 +3,9 @@ package leveldb
 import (
 	"path"
 
+	"github.com/Mrs4s/go-cqhttp/utils"
+	"github.com/Mrs4s/go-cqhttp/utils/binary"
+
 	"github.com/pkg/errors"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"

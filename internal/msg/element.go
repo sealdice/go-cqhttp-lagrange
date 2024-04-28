@@ -3,9 +3,10 @@ package msg
 
 import (
 	"bytes"
-	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/Mrs4s/go-cqhttp/utils/binary"
 )
 
 // @@@ CQ码转义处理 @@@

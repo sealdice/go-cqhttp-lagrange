@@ -2,6 +2,8 @@ package global
 
 import (
 	"bytes"
+
+	"github.com/Mrs4s/go-cqhttp/utils/binary"
 )
 
 // NewBuffer 从池中获取新 bytes.Buffer

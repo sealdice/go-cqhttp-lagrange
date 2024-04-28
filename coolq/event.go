@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/LagrangeDev/LagrangeGo/message"
+	"github.com/Mrs4s/go-cqhttp/utils/binary"
+
 	"github.com/LagrangeDev/LagrangeGo/client"
 	log "github.com/sirupsen/logrus"
 
