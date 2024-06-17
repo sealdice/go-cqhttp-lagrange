@@ -1,7 +1,6 @@
 package sqlite3
 
 import (
-	"github.com/Mrs4s/go-cqhttp/utils"
 	"github.com/Mrs4s/go-cqhttp/utils/binary"
 	"hash/crc64"
 	"os"
@@ -9,6 +8,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/Mrs4s/go-cqhttp/utils"
 
 	sql "github.com/FloatTech/sqlite"
 	"github.com/pkg/errors"

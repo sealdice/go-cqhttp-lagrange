@@ -4,7 +4,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/LagrangeDev/LagrangeGo/entity"
+	"github.com/LagrangeDev/LagrangeGo/client/entity"
+
 	"github.com/LagrangeDev/LagrangeGo/message"
 
 	log "github.com/sirupsen/logrus"

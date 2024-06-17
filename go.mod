@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/FloatTech/sqlite v1.6.3
-	github.com/LagrangeDev/LagrangeGo v0.0.0-20240424094005-d8fac1c2dbd2
+	github.com/LagrangeDev/LagrangeGo v0.0.0-20240616110148-79ecc2aefeda
 	github.com/Microsoft/go-winio v0.6.2-0.20230724192519-b29bbd58a65a
 	github.com/RomiChan/syncx v0.0.0-20240418144900-b7402ffdebc7
 	github.com/RomiChan/websocket v1.4.3-0.20220227141055-9b2c6168c9c5
@@ -20,20 +20,22 @@ require (
 	github.com/tidwall/gjson v1.15.0
 	github.com/wdvxdr1123/go-silk v0.0.0-20210316130616-d47b553def60
 	go.mongodb.org/mongo-driver v1.12.0
-	golang.org/x/crypto v0.11.0
-	golang.org/x/image v0.9.0
-	golang.org/x/sys v0.19.0
-	golang.org/x/term v0.10.0
+	golang.org/x/crypto v0.23.0
+	golang.org/x/image v0.16.0
+	golang.org/x/sys v0.20.0
+	golang.org/x/term v0.20.0
 	golang.org/x/time v0.3.0
 	gopkg.ilharper.com/x/isatty v1.1.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	github.com/FloatTech/ttl v0.0.0-20220715042055-15612be72f5b // indirect
+	github.com/FloatTech/ttl v0.0.0-20230307105452-d6f7b2b647d1 // indirect
 	github.com/RomiChan/protobuf v0.1.1-0.20230204044148-2ed269a2e54d // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/fumiama/imgsz v0.0.2 // indirect
+	github.com/fumiama/gofastTEA v0.0.10 // indirect
+	github.com/fumiama/imgsz v0.0.4 // indirect
+	github.com/fumiama/terasu v0.0.0-20240507144117-547a591149c0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jonboulle/clockwork v0.3.0 // indirect
@@ -53,8 +55,9 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/text v0.11.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/tools v0.11.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect

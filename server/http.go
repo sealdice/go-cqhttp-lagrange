@@ -9,7 +9,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/Mrs4s/go-cqhttp/utils"
 	"io"
 	"net"
 	"net/http"
@@ -19,6 +18,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Mrs4s/go-cqhttp/utils"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
@@ -359,7 +360,7 @@ func (c *HTTPClient) onBotPushEvent(e *coolq.Event) {
 	}
 
 	header := make(http.Header)
-	header.Set("X-Self-ID", strconv.FormatInt(c.bot.Client.Uin, 10))
+	header.Set("X-Self-ID", strconv.FormatInt(int64(c.bot.Client.Uin), 10))
 	header.Set("User-Agent", "CQHttp/4.15.0")
 	header.Set("Content-Type", "application/json")
 	if c.secret != "" {

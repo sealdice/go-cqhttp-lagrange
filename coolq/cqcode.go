@@ -1037,7 +1037,7 @@ func (bot *CQBot) readVideoCache(b []byte) message.IMessageElement {
 		Size:      r.ReadI32(),
 		ThumbSize: r.ReadI32(),
 		Name:      r.ReadStringWithLength("u32", true),
-		Uuid:      r.ReadBytes(r.GetRamin()),
+		Uuid:      r.ReadBytes(r.Len()),
 	}
 }
 

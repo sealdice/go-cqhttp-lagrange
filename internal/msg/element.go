@@ -3,10 +3,11 @@ package msg
 
 import (
 	"bytes"
-	"strings"
-	"unicode/utf8"
 
 	"github.com/Mrs4s/go-cqhttp/utils/binary"
+
+	"strings"
+	"unicode/utf8"
 )
 
 // @@@ CQ码转义处理 @@@

@@ -2,6 +2,7 @@
 package selfdiagnosis
 
 import (
+	"github.com/LagrangeDev/LagrangeGo/client"
 	log "github.com/sirupsen/logrus"
 )
 
