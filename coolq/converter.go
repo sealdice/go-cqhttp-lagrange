@@ -82,7 +82,7 @@ func (bot *CQBot) formatGroupMessage(m *message.GroupMessage) *event {
 		gm["sender"].(global.MSG)["nickname"] = "匿名消息"
 		typ = "message/group/anonymous"
 	} else {
-		mem, _ := bot.Client.GetCachedMemberInfo(m.Sender.Uin, m.GroupCode)
+		mem := bot.Client.GetCachedMemberInfo(m.Sender.Uin, m.GroupCode)
 		if mem == nil {
 			log.Warnf("获取 %v 成员信息失败，尝试刷新成员列表", m.Sender.Uin)
 			err := bot.Client.RefreshGroupMembersCache(m.GroupCode)
@@ -90,7 +90,7 @@ func (bot *CQBot) formatGroupMessage(m *message.GroupMessage) *event {
 				log.Warnf("刷新群 %v 成员列表失败: %v", m.GroupCode, err)
 				return nil
 			}
-			mem, _ = bot.Client.GetCachedMemberInfo(m.Sender.Uin, m.GroupCode)
+			mem = bot.Client.GetCachedMemberInfo(m.Sender.Uin, m.GroupCode)
 			if mem == nil {
 				return nil
 			}

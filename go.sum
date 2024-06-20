@@ -34,6 +34,20 @@ github.com/LagrangeDev/LagrangeGo v0.0.0-20240615081559-d665d3b8a3d9 h1:XqORU1Bv
 github.com/LagrangeDev/LagrangeGo v0.0.0-20240615081559-d665d3b8a3d9/go.mod h1:bXBGpyljx81ux9ItumiMB67xJGGpe2Sb5CTUFFeTR+Y=
 github.com/LagrangeDev/LagrangeGo v0.0.0-20240616110148-79ecc2aefeda h1:I1oLMzMyRcDO1hkjAJSJxq++KZkEffDfF6Hux+PQMOQ=
 github.com/LagrangeDev/LagrangeGo v0.0.0-20240616110148-79ecc2aefeda/go.mod h1:bXBGpyljx81ux9ItumiMB67xJGGpe2Sb5CTUFFeTR+Y=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240617074307-0b9e20dd3dd3 h1:rsDAzzXQ7iFoHdRWr+D+w5SizouYwk/kxlQ1l38Zdy0=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240617074307-0b9e20dd3dd3/go.mod h1:bXBGpyljx81ux9ItumiMB67xJGGpe2Sb5CTUFFeTR+Y=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240617132319-6b660aa21e70 h1:wMiF3KUBDm+CScGZZae0+qfmCiclLHRbpvoj4cq41kI=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240617132319-6b660aa21e70/go.mod h1:bXBGpyljx81ux9ItumiMB67xJGGpe2Sb5CTUFFeTR+Y=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240618043710-3a2e702a456d h1:0kfncL4Tjl3hlboChnmjz0KUe2PVs+xKyxbImTX54eI=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240618043710-3a2e702a456d/go.mod h1:bXBGpyljx81ux9ItumiMB67xJGGpe2Sb5CTUFFeTR+Y=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240618124420-cb293c334bcf h1:04hnyJwZOmt/YZM971SG4g1esenHfng0APrwUdmn83g=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240618124420-cb293c334bcf/go.mod h1:bXBGpyljx81ux9ItumiMB67xJGGpe2Sb5CTUFFeTR+Y=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240619132207-b41aaa86d4b0 h1:ZbtpwDZ9Y9FcjFV+QVh67RU7t1PDuMAI5vVlDdQycjo=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240619132207-b41aaa86d4b0/go.mod h1:bXBGpyljx81ux9ItumiMB67xJGGpe2Sb5CTUFFeTR+Y=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240619132605-6126240ba827 h1:kHadPqdFqvXbegZAHd4q8Df3i30J2kzbp+PdfSKZo3E=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240619132605-6126240ba827/go.mod h1:bXBGpyljx81ux9ItumiMB67xJGGpe2Sb5CTUFFeTR+Y=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240620044204-f5d774dbcde9 h1:0aqt14kc/x5jtVl2Xk/LHAjt6JW45+mMVu6jbvW6gaE=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240620044204-f5d774dbcde9/go.mod h1:bXBGpyljx81ux9ItumiMB67xJGGpe2Sb5CTUFFeTR+Y=
 github.com/Microsoft/go-winio v0.6.2-0.20230724192519-b29bbd58a65a h1:aU1703IHxupjzipvhu16qYKLMR03e+8WuNR+JMsKfGU=
 github.com/Microsoft/go-winio v0.6.2-0.20230724192519-b29bbd58a65a/go.mod h1:OZqLNXdYJHmx7aqq/T6wAdFEdoGm5nmIfC4kU7M8P8o=
 github.com/RomiChan/protobuf v0.1.1-0.20230204044148-2ed269a2e54d h1:/Xuj3fIiMY2ls1TwvPKmaqQrtJsPY+c9s+0lOScVHd8=
@@ -157,6 +171,7 @@ golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5y
 golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
 golang.org/x/crypto v0.11.0 h1:6Ewdq3tDic1mg5xRO4milcWCfMVQhI4NkqWWvqejpuA=
 golang.org/x/crypto v0.11.0/go.mod h1:xgJhtzW8F9jGdVFWZESrid1U1bjeNy4zgy5cRr/CIio=
+golang.org/x/crypto v0.23.0 h1:dIJU/v2J8Mdglj/8rJ6UUOM3Zc9zLZxVZwwxMooUSAI=
 golang.org/x/crypto v0.23.0/go.mod h1:CKFgDieR+mRhux2Lsu27y0fO304Db0wZe70UKqHu0v8=
 golang.org/x/image v0.9.0 h1:QrzfX26snvCM20hIhBwuHI/ThTg18b/+kcKdXHvnR+g=
 golang.org/x/image v0.9.0/go.mod h1:jtrku+n79PfroUbvDdeUWMAI+heR786BofxrbiSF+J0=
@@ -208,6 +223,7 @@ golang.org/x/term v0.0.0-20210927222741-03fcf44c2211/go.mod h1:jbD1KX2456YbFQfuX
 golang.org/x/term v0.5.0/go.mod h1:jMB1sMXY+tzblOD4FWmEbocvup2/aLOaQEp7JmGp78k=
 golang.org/x/term v0.10.0 h1:3R7pNqamzBraeqj/Tj8qt1aQ2HpmlC+Cx/qL/7hn4/c=
 golang.org/x/term v0.10.0/go.mod h1:lpqdcUyK/oCiQxvxVrppt5ggO2KCZ5QblwqPnfZ6d5o=
+golang.org/x/term v0.20.0 h1:VnkxpohqXaOBYJtBmEppKUG6mXpi+4O6purfc2+sMhw=
 golang.org/x/term v0.20.0/go.mod h1:8UkIAJTvZgivsXaD6/pH6U9ecQzZ45awqEOzuCvwpFY=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.3/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=

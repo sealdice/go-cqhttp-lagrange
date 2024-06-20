@@ -123,7 +123,7 @@ func (bot *CQBot) CQGetGroupList(noCache bool, spec *onebot.Spec) global.MSG {
 	if noCache {
 		_ = bot.Client.RefreshAllGroupsInfo
 	}
-	grpInfos, _ := bot.Client.GetCachedAllGroupsInfo()
+	grpInfos := bot.Client.GetCachedAllGroupsInfo()
 	gs := make([]global.MSG, 0, len(grpInfos))
 	for _, g := range grpInfos {
 		gs = append(gs, global.MSG{
@@ -147,7 +147,7 @@ func (bot *CQBot) CQGetGroupInfo(groupID int64, noCache bool, spec *onebot.Spec)
 	if noCache {
 		_ = bot.Client.RefreshAllGroupsInfo
 	}
-	group, _ := bot.Client.GetCachedGroupInfo(uint32(groupID))
+	group := bot.Client.GetCachedGroupInfo(uint32(groupID))
 	if group != nil {
 		return OK(global.MSG{
 			"group_id":          spec.ConvertID(group.GroupUin),
@@ -169,7 +169,7 @@ func (bot *CQBot) CQGetGroupMemberList(groupID int64, noCache bool) global.MSG {
 	if noCache {
 		_ = bot.Client.RefreshAllGroupsInfo
 	}
-	groupMembers, _ := bot.Client.GetCachedMembersInfo(uint32(groupID))
+	groupMembers := bot.Client.GetCachedMembersInfo(uint32(groupID))
 	if groupMembers == nil {
 		return Failed(100, "GROUP_NOT_FOUND", "群聊不存在")
 	}
@@ -185,7 +185,7 @@ func (bot *CQBot) CQGetGroupMemberList(groupID int64, noCache bool) global.MSG {
 // https://git.io/Jtz1s
 // @route(get_group_member_info)
 func (bot *CQBot) CQGetGroupMemberInfo(groupID, userID int64, noCache bool) global.MSG {
-	group, _ := bot.Client.GetCachedGroupInfo(uint32(groupID))
+	group := bot.Client.GetCachedGroupInfo(uint32(groupID))
 	if group == nil {
 		return Failed(100, "GROUP_NOT_FOUND", "群聊不存在")
 	}
@@ -196,7 +196,7 @@ func (bot *CQBot) CQGetGroupMemberInfo(groupID, userID int64, noCache bool) glob
 			return Failed(100, "GET_MEMBER_INFO_API_ERROR", err.Error())
 		}
 	}
-	member, _ := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID))
+	member := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID))
 	if member == nil {
 		return Failed(100, "MEMBER_NOT_FOUND", "群员不存在")
 	}
@@ -423,7 +423,7 @@ func (bot *CQBot) CQSendMessage(groupID, userID int64, m gjson.Result, messageTy
 // @route11(send_group_msg)
 // @rename(m->message)
 func (bot *CQBot) CQSendGroupMessage(groupID int64, m gjson.Result, autoEscape bool) global.MSG {
-	group, _ := bot.Client.GetCachedGroupInfo(uint32(groupID))
+	group := bot.Client.GetCachedGroupInfo(uint32(groupID))
 	if group == nil {
 		return Failed(100, "GROUP_NOT_FOUND", "群聊不存在")
 	}
@@ -450,7 +450,7 @@ func (bot *CQBot) CQSendGroupMessage(groupID int64, m gjson.Result, autoEscape b
 	return OK(global.MSG{"message_id": mid})
 }
 
-// TODO 这个东西应该出现在LagrangeGo
+// TODO 上传转发消息
 //func (bot *CQBot) uploadForwardElement(m gjson.Result, target int64, sourceType message.SourceType) *message.ForwardElement {
 //	ts := time.Now().Add(-time.Minute * 5)
 //	groupID := target
@@ -670,8 +670,8 @@ func (bot *CQBot) CQSendPrivateMessage(userID int64, groupID int64, m gjson.Resu
 // https://git.io/Jtz1B
 // @route(set_group_card)
 func (bot *CQBot) CQSetGroupCard(groupID, userID int64, card string) global.MSG {
-	if g, _ := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
-		if m, _ := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID)); m != nil {
+	if g := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
+		if m := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID)); m != nil {
 			if err := bot.Client.GroupRenameMember(uint32(groupID), uint32(userID), card); err != nil {
 				return Failed(100, "SET_CARD_FAILED", err.Error())
 
@@ -688,8 +688,8 @@ func (bot *CQBot) CQSetGroupCard(groupID, userID int64, card string) global.MSG 
 // @route(set_group_special_title)
 // @rename(title->special_title)
 func (bot *CQBot) CQSetGroupSpecialTitle(groupID, userID int64, title string) global.MSG {
-	if g, _ := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
-		if m, _ := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID)); m != nil {
+	if g := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
+		if m := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID)); m != nil {
 			if err := bot.Client.GroupSetSpecialTitle(uint32(groupID), uint32(userID), title); err != nil {
 				return Failed(100, "SET_Title_FAILED", err.Error())
 			}
@@ -705,7 +705,7 @@ func (bot *CQBot) CQSetGroupSpecialTitle(groupID, userID int64, title string) gl
 // @route(set_group_name)
 // @rename(name->group_name)
 func (bot *CQBot) CQSetGroupName(groupID int64, name string) global.MSG {
-	if g, _ := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
+	if g := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
 		if err := bot.Client.GroupRename(uint32(groupID), name); err != nil {
 			return Failed(100, "SET_NAME_FAILED", err.Error())
 		}
@@ -778,8 +778,8 @@ func (bot *CQBot) CQSetGroupName(groupID int64, name string) global.MSG {
 // @route(set_group_kick)
 // @rename(msg->message, block->reject_add_request)
 func (bot *CQBot) CQSetGroupKick(groupID int64, userID int64, msg string, block bool) global.MSG {
-	if g, _ := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
-		m, _ := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID))
+	if g := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
+		m := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID))
 		if m == nil {
 			return Failed(100, "MEMBER_NOT_FOUND", "人员不存在")
 		}
@@ -797,8 +797,8 @@ func (bot *CQBot) CQSetGroupKick(groupID int64, userID int64, msg string, block 
 // @route(set_group_ban)
 // @default(duration=1800)
 func (bot *CQBot) CQSetGroupBan(groupID, userID int64, duration uint32) global.MSG {
-	if g, _ := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
-		if m, _ := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID)); m != nil {
+	if g := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
+		if m := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID)); m != nil {
 			if duration >= 2592000 {
 				return Failed(100, "DURATION_IS_NOT_IN_RANGE", "非法的禁言时长")
 			}
@@ -817,7 +817,7 @@ func (bot *CQBot) CQSetGroupBan(groupID, userID int64, duration uint32) global.M
 // @route(set_group_whole_ban)
 // @default(enable=true)
 func (bot *CQBot) CQSetGroupWholeBan(groupID int64, enable bool) global.MSG {
-	if g, _ := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
+	if g := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
 		if err := bot.Client.GroupMuteGlobal(uint32(groupID), enable); err != nil {
 			return Failed(100, "NOT_MANAGEABLE", "机器人权限不足")
 		}
@@ -831,7 +831,7 @@ func (bot *CQBot) CQSetGroupWholeBan(groupID int64, enable bool) global.MSG {
 // https://git.io/Jtz1K
 // @route(set_group_leave)
 func (bot *CQBot) CQSetGroupLeave(groupID int64) global.MSG {
-	if g, _ := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
+	if g := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
 		if err := bot.Client.GroupLeave(uint32(groupID)); err != nil {
 			return Failed(100, "反正是失败了.png", err.Error())
 		}
@@ -922,37 +922,37 @@ func (bot *CQBot) CQSetGroupLeave(groupID int64) global.MSG {
 //	return Failed(100, "FLAG_NOT_FOUND", "FLAG不存在")
 //}
 
-// TODO 计划实现的api 撤回消息
 // CQDeleteMessage 撤回消息
 //
 // https:// git.io/Jtz1y
 // @route(delete_msg)
-//func (bot *CQBot) CQDeleteMessage(messageID int32) global.MSG {
-//	msg, err := db.GetMessageByGlobalID(messageID)
-//	if err != nil {
-//		log.Warnf("撤回消息时出现错误: %v", err)
-//		return Failed(100, "MESSAGE_NOT_FOUND", "消息不存在")
-//	}
-//	switch o := msg.(type) {
-//	case *db.StoredGroupMessage:
-//		if err = bot.Client.RecallGroupMessage(o.GroupCode, o.Attribute.MessageSeq, o.Attribute.InternalID); err != nil {
-//			log.Warnf("撤回 %v 失败: %v", messageID, err)
-//			return Failed(100, "RECALL_API_ERROR", err.Error())
-//		}
-//	case *db.StoredPrivateMessage:
-//		if o.Attribute.SenderUin != bot.Client.Uin {
-//			log.Warnf("撤回 %v 失败: 好友会话无法撤回对方消息.", messageID)
-//			return Failed(100, "CANNOT_RECALL_FRIEND_MSG", "无法撤回对方消息")
-//		}
-//		if err = bot.Client.RecallPrivateMessage(o.TargetUin, o.Attribute.Timestamp, o.Attribute.MessageSeq, o.Attribute.InternalID); err != nil {
-//			log.Warnf("撤回 %v 失败: %v", messageID, err)
-//			return Failed(100, "RECALL_API_ERROR", err.Error())
-//		}
-//	default:
-//		return Failed(100, "UNKNOWN_ERROR")
-//	}
-//	return OK(nil)
-//}
+func (bot *CQBot) CQDeleteMessage(messageID int32) global.MSG {
+	msg, err := db.GetMessageByGlobalID(messageID)
+	if err != nil {
+		log.Warnf("撤回消息时出现错误: %v", err)
+		return Failed(100, "MESSAGE_NOT_FOUND", "消息不存在")
+	}
+	switch o := msg.(type) {
+	case *db.StoredGroupMessage:
+		if err = bot.Client.RecallGroupMessage(uint32(o.GroupCode), uint32(o.Attribute.MessageSeq)); err != nil {
+			log.Warnf("撤回 %v 失败: %v", messageID, err)
+			return Failed(100, "RECALL_API_ERROR", err.Error())
+		}
+	case *db.StoredPrivateMessage:
+		if o.Attribute.SenderUin != int64(bot.Client.Uin) {
+			log.Warnf("撤回 %v 失败: 好友会话无法撤回对方消息.", messageID)
+			return Failed(100, "CANNOT_RECALL_FRIEND_MSG", "无法撤回对方消息")
+		}
+		// TODO 撤回好友消息
+		//if err = bot.Client.RecallPrivateMessage(o.TargetUin, o.Attribute.Timestamp, o.Attribute.MessageSeq, o.Attribute.InternalID); err != nil {
+		//	log.Warnf("撤回 %v 失败: %v", messageID, err)
+		//	return Failed(100, "RECALL_API_ERROR", err.Error())
+		//}
+	default:
+		return Failed(100, "UNKNOWN_ERROR")
+	}
+	return OK(nil)
+}
 
 // CQSetGroupAdmin 群组设置管理员
 //
@@ -960,13 +960,13 @@ func (bot *CQBot) CQSetGroupLeave(groupID int64) global.MSG {
 // @route(set_group_admin)
 // @default(enable=true)
 func (bot *CQBot) CQSetGroupAdmin(groupID, userID int64, enable bool) global.MSG {
-	if g, _ := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
+	if g := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
 		return Failed(100, "GROUP_NOT_FOUND", "群不存在")
 	}
-	if m, _ := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID)); m.Permission != entity.Owner {
+	if m := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID)); m.Permission != entity.Owner {
 		return Failed(100, "PERMISSION_DENIED", "或权限不足")
 	}
-	mem, _ := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID))
+	mem := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID))
 	if mem == nil {
 		return Failed(100, "GROUP_MEMBER_NOT_FOUND", "群成员不存在")
 	}
@@ -1164,16 +1164,17 @@ func (bot *CQBot) CQHandleQuickOperation(context, operation gjson.Result) global
 				}
 			}
 		}
-	case "request":
-		reqType := context.Get("request_type").Str
-		if operation.Get("approve").Exists() {
-			if reqType == "friend" {
-				bot.CQProcessFriendRequest(context.Get("flag").String(), operation.Get("approve").Bool())
-			}
-			if reqType == "group" {
-				bot.CQProcessGroupRequest(context.Get("flag").String(), context.Get("sub_type").Str, operation.Get("reason").Str, operation.Get("approve").Bool())
-			}
-		}
+		// TODO 暂未支持
+		//case "request":
+		//	reqType := context.Get("request_type").Str
+		//	if operation.Get("approve").Exists() {
+		//		if reqType == "friend" {
+		//			bot.CQProcessFriendRequest(context.Get("flag").String(), operation.Get("approve").Bool())
+		//		}
+		//		if reqType == "group" {
+		//			bot.CQProcessGroupRequest(context.Get("flag").String(), context.Get("sub_type").Str, operation.Get("reason").Str, operation.Get("approve").Bool())
+		//		}
+		//	}
 	}
 	return OK(nil)
 }

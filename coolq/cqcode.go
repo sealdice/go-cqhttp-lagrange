@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"math/rand"
 	"net/url"
 	"os"
 	"path"
@@ -168,19 +167,19 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 					{K: "url", V: o.Url},
 				},
 			}
-		case *message.GroupImageElement:
+		case *message.ImageElement:
 			data := pairs{
 				{K: "file", V: hex.EncodeToString(o.Md5) + ".image"},
 				{K: "subType", V: strconv.FormatInt(int64(o.ImageType), 10)},
 				{K: "url", V: o.Url},
 			}
-			switch {
-			case o.Flash:
-				data = append(data, pair{K: "type", V: "flash"})
-			case o.EffectID != 0:
-				data = append(data, pair{K: "type", V: "show"})
-				data = append(data, pair{K: "id", V: strconv.FormatInt(int64(o.EffectID), 10)})
-			}
+			//switch {
+			//case o.Flash:
+			//	data = append(data, pair{K: "type", V: "flash"})
+			//case o.EffectID != 0:
+			//	data = append(data, pair{K: "type", V: "show"})
+			//	data = append(data, pair{K: "id", V: strconv.FormatInt(int64(o.EffectID), 10)})
+			//}
 			m = msg.Element{
 				Type: "image",
 				Data: data,
@@ -189,18 +188,18 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 				Type: "image",
 				Data: data,
 			}
-		case *message.FriendImageElement:
-			data := pairs{
-				{K: "file", V: hex.EncodeToString(o.Md5) + ".image"},
-				{K: "url", V: o.Url},
-			}
-			if o.Flash {
-				data = append(data, pair{K: "type", V: "flash"})
-			}
-			m = msg.Element{
-				Type: "image",
-				Data: data,
-			}
+		//case *message.FriendImageElement:
+		//	data := pairs{
+		//		{K: "file", V: hex.EncodeToString(o.Md5) + ".image"},
+		//		{K: "url", V: o.Url},
+		//	}
+		//	if o.Flash {
+		//		data = append(data, pair{K: "type", V: "flash"})
+		//	}
+		//	m = msg.Element{
+		//		Type: "image",
+		//		Data: data,
+		//	}
 		// TODO DiceElement
 		//case *message.DiceElement:
 		//	m = msg.Element{
@@ -342,7 +341,7 @@ func ToMessageContent(e []message.IMessageElement, source message.Source) (r []g
 				"type": "video",
 				"data": global.MSG{"file": o.Name, "url": o.Url},
 			}
-		case *message.GroupImageElement:
+		case *message.ImageElement:
 			data := global.MSG{"file": hex.EncodeToString(o.Md5) + ".image", "url": o.Url, "subType": uint32(o.ImageType)}
 			switch {
 			case o.Flash:
@@ -355,15 +354,15 @@ func ToMessageContent(e []message.IMessageElement, source message.Source) (r []g
 				"type": "image",
 				"data": data,
 			}
-		case *message.FriendImageElement:
-			data := global.MSG{"file": hex.EncodeToString(o.Md5) + ".image", "url": o.Url}
-			if o.Flash {
-				data["type"] = "flash"
-			}
-			m = global.MSG{
-				"type": "image",
-				"data": data,
-			}
+		//case *message.FriendImageElement:
+		//	data := global.MSG{"file": hex.EncodeToString(o.Md5) + ".image", "url": o.Url}
+		//	if o.Flash {
+		//		data["type"] = "flash"
+		//	}
+		//	m = global.MSG{
+		//		"type": "image",
+		//		"data": data,
+		//	}
 		//case *message.DiceElement:
 		//	m = global.MSG{"type": "dice", "data": global.MSG{"value": o.Value}}
 		//case *message.FingerGuessingElement:
@@ -544,7 +543,7 @@ func (bot *CQBot) voice(elem msg.Element) (m any, err error) {
 			return nil, err
 		}
 	}
-	return &message.VoiceElement{Data: data}, nil
+	return message.NewRecord(data), nil
 }
 
 func (bot *CQBot) at(id, name string) (m any, err error) {
@@ -651,13 +650,13 @@ func (bot *CQBot) ConvertElement(spec *onebot.Spec, elem msg.Element, sourceType
 		case *msg.LocalImage:
 			img.Flash = flash
 			img.EffectID = int32(id)
-		case *message.GroupImageElement:
+		case *message.ImageElement:
 			img.Flash = flash
 			img.EffectID = int32(id)
 			i, _ := strconv.ParseInt(elem.Get("subType"), 10, 64)
 			img.ImageType = int32(i)
-		case *message.FriendImageElement:
-			img.Flash = flash
+			//case *message.FriendImageElement:
+			//	img.Flash = flash
 		}
 		return img, nil
 	case "reply":
@@ -1002,7 +1001,8 @@ func (bot *CQBot) readImageCache(b []byte, sourceType message.SourceType) (messa
 		return nil, errors.New("invalid cache")
 	}
 	r := binary.NewReader(b)
-	hash := r.ReadBytes(16)
+	_ = r.ReadBytes(16)
+	//hash := r.ReadBytes(16)
 	size := r.ReadI32()
 	r.ReadStringWithLength("u32", true)
 	imageURL := r.ReadStringWithLength("u32", true)
@@ -1014,12 +1014,14 @@ func (bot *CQBot) readImageCache(b []byte, sourceType message.SourceType) (messa
 		return bot.makeImageOrVideoElem(elem, false, sourceType)
 	}
 	var rsp message.IMessageElement
-	switch sourceType { // nolint:exhaustive
-	case message.SourceGroup:
-		rsp, err = bot.Client.QueryGroupImage(int64(rand.Uint32()), hash, size)
-	default:
-		rsp, err = bot.Client.QueryFriendImage(int64(rand.Uint32()), hash, size)
-	}
+	// TODO 不知道这里是干嘛的
+	//switch sourceType { // nolint:exhaustive
+	//case message.SourceGroup:
+	//	rsp, err = bot.Client.QueryGroupImage(int64(rand.Uint32()), hash, size)
+	//default:
+	//	rsp, err = bot.Client.QueryFriendImage(int64(rand.Uint32()), hash, size)
+	//}
+	err = errors.New("unsuport error")
 	if err != nil && imageURL != "" {
 		var elem msg.Element
 		elem.Type = "image"

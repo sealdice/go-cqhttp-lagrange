@@ -1,11 +1,7 @@
 // Package selfdiagnosis 自我诊断相关
 package selfdiagnosis
 
-import (
-	"github.com/LagrangeDev/LagrangeGo/client"
-	log "github.com/sirupsen/logrus"
-)
-
+/*
 // NetworkDiagnosis 诊断网络状态并输出结果
 func NetworkDiagnosis(c *client.QQClient) {
 	log.Infof("开始诊断网络情况")
@@ -79,3 +75,4 @@ func DNSDiagnosis() {
 func EnvironmentDiagnosis() {
 	// todo
 }
+*/

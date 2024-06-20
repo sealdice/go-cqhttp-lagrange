@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/FloatTech/sqlite v1.6.3
-	github.com/LagrangeDev/LagrangeGo v0.0.0-20240616110148-79ecc2aefeda
+	github.com/LagrangeDev/LagrangeGo v0.0.0-20240620044204-f5d774dbcde9
 	github.com/Microsoft/go-winio v0.6.2-0.20230724192519-b29bbd58a65a
 	github.com/RomiChan/syncx v0.0.0-20240418144900-b7402ffdebc7
 	github.com/RomiChan/websocket v1.4.3-0.20220227141055-9b2c6168c9c5

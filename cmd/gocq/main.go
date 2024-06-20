@@ -12,13 +12,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/LagrangeDev/LagrangeGo/utils/crypto"
+
+	"github.com/LagrangeDev/LagrangeGo/client/auth"
+
 	"github.com/LagrangeDev/LagrangeGo/client"
-	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 	para "github.com/fumiama/go-hide-param"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/pbkdf2"
 	"golang.org/x/term"
 
@@ -28,8 +29,6 @@ import (
 	"github.com/Mrs4s/go-cqhttp/global/terminal"
 	"github.com/Mrs4s/go-cqhttp/internal/base"
 	"github.com/Mrs4s/go-cqhttp/internal/cache"
-	"github.com/Mrs4s/go-cqhttp/internal/download"
-	"github.com/Mrs4s/go-cqhttp/internal/selfdiagnosis"
 	"github.com/Mrs4s/go-cqhttp/internal/selfupdate"
 	"github.com/Mrs4s/go-cqhttp/modules/servers"
 	"github.com/Mrs4s/go-cqhttp/server"
@@ -142,13 +141,13 @@ func LoginInteract() {
 	}
 	if !global.PathExists("device.json") {
 		log.Warn("虚拟设备信息不存在, 将自动生成随机设备.")
-		device = client.GenRandomDevice()
-		_ = os.WriteFile("device.json", device.ToJson(), 0o644)
+		device = auth.NewDeviceInfo(int(crypto.RandU32()))
+		_ = device.Save("device.json")
 		log.Info("已生成设备信息并保存到 device.json 文件.")
 	} else {
 		log.Info("将使用 device.json 内的设备信息运行Bot.")
-		device = new(client.DeviceInfo)
-		if err := device.ReadJson([]byte(global.ReadAllText("device.json"))); err != nil {
+		var err error
+		if device, err = auth.LoadOrSaveDevice("device"); err != nil {
 			log.Fatalf("加载设备信息失败: %v", err)
 		}
 	}
@@ -207,39 +206,23 @@ func LoginInteract() {
 		time.Sleep(time.Second * 5)
 	}
 	log.Info("开始尝试登录并同步消息...")
-	log.Infof("使用协议: %s", device.Protocol.Version())
+	log.Infof("使用协议: %s", "linux")
 	cli = newClient()
 	cli.UseDevice(device)
 	isQRCodeLogin := (base.Account.Uin == 0 || len(base.Account.Password) == 0) && !base.Account.Encrypt
 	isTokenLogin := false
 
-	if isQRCodeLogin && cli.Device().Protocol != 2 {
-		log.Warn("当前协议不支持二维码登录, 请配置账号密码登录.")
-		os.Exit(0)
-	}
-
-	// 加载本地版本信息, 一般是在上次登录时保存的
-	versionFile := path.Join(global.VersionsPath, fmt.Sprint(int(cli.Device().Protocol))+".json")
-	if global.PathExists(versionFile) {
-		b, err := os.ReadFile(versionFile)
-		if err == nil {
-			_ = cli.Device().Protocol.Version().UpdateFromJson(b)
-		}
-		log.Infof("从文件 %s 读取协议版本 %v.", versionFile, cli.Device().Protocol.Version())
-	}
-
 	saveToken := func() {
-		base.AccountToken = cli.GenToken()
+		base.AccountToken, _ = cli.Sig().Marshal()
 		_ = os.WriteFile("session.token", base.AccountToken, 0o644)
 	}
 	if global.PathExists("session.token") {
-		token, err := os.ReadFile("session.token")
+		token, _ := os.ReadFile("session.token")
+		sig, err := auth.UnmarshalSigInfo(token, true)
 		if err == nil {
 			if base.Account.Uin != 0 {
-				r := binary.NewReader(token)
-				cu := r.ReadInt64()
-				if cu != base.Account.Uin {
-					log.Warnf("警告: 配置文件内的QQ号 (%v) 与缓存内的QQ号 (%v) 不相同", base.Account.Uin, cu)
+				if int64(sig.Uin) != base.Account.Uin {
+					log.Warnf("警告: 配置文件内的QQ号 (%v) 与缓存内的QQ号 (%v) 不相同", base.Account.Uin, sig.Uin)
 					log.Warnf("1. 使用会话缓存继续.")
 					log.Warnf("2. 删除会话缓存并重启.")
 					log.Warnf("请选择:")
@@ -251,7 +234,7 @@ func LoginInteract() {
 					}
 				}
 			}
-			if err = cli.TokenLogin(token); err != nil {
+			if err = cli.FastLogin(&sig); err != nil {
 				_ = os.Remove("session.token")
 				log.Warnf("恢复会话失败: %v , 尝试使用正常流程登录.", err)
 				time.Sleep(time.Second)
@@ -264,34 +247,34 @@ func LoginInteract() {
 			}
 		}
 	}
-	if base.Account.Uin != 0 && base.PasswordHash != [16]byte{} {
-		cli.Uin = base.Account.Uin
-		cli.PasswordMd5 = base.PasswordHash
-	}
-	download.SetTimeout(time.Duration(base.HTTPTimeout) * time.Second)
-	if !base.FastStart {
-		log.Infof("正在检查协议更新...")
-		currentVersionName := device.Protocol.Version().SortVersionName
-		remoteVersion, err := getRemoteLatestProtocolVersion(int(device.Protocol.Version().Protocol))
-		if err == nil {
-			remoteVersionName := gjson.GetBytes(remoteVersion, "sort_version_name").String()
-			if remoteVersionName != currentVersionName {
-				switch {
-				case !base.UpdateProtocol:
-					log.Infof("检测到协议更新: %s -> %s", currentVersionName, remoteVersionName)
-					log.Infof("如果登录时出现版本过低错误, 可尝试使用 -update-protocol 参数启动")
-				case !isTokenLogin:
-					_ = device.Protocol.Version().UpdateFromJson(remoteVersion)
-					log.Infof("协议版本已更新: %s -> %s", currentVersionName, remoteVersionName)
-				default:
-					log.Infof("检测到协议更新: %s -> %s", currentVersionName, remoteVersionName)
-					log.Infof("由于使用了会话缓存, 无法自动更新协议, 请删除缓存后重试")
-				}
-			}
-		} else if err.Error() != "remote version unavailable" {
-			log.Warnf("检查协议更新失败: %v", err)
-		}
-	}
+	//if base.Account.Uin != 0 && base.PasswordHash != [16]byte{} {
+	//	cli.Uin = base.Account.Uin
+	//	cli.PasswordMd5 = base.PasswordHash
+	//}
+	//download.SetTimeout(time.Duration(base.HTTPTimeout) * time.Second)
+	//if !base.FastStart {
+	//	log.Infof("正在检查协议更新...")
+	//	currentVersionName := device.Protocol.Version().SortVersionName
+	//	remoteVersion, err := getRemoteLatestProtocolVersion(int(device.Protocol.Version().Protocol))
+	//	if err == nil {
+	//		remoteVersionName := gjson.GetBytes(remoteVersion, "sort_version_name").String()
+	//		if remoteVersionName != currentVersionName {
+	//			switch {
+	//			case !base.UpdateProtocol:
+	//				log.Infof("检测到协议更新: %s -> %s", currentVersionName, remoteVersionName)
+	//				log.Infof("如果登录时出现版本过低错误, 可尝试使用 -update-protocol 参数启动")
+	//			case !isTokenLogin:
+	//				_ = device.Protocol.Version().UpdateFromJson(remoteVersion)
+	//				log.Infof("协议版本已更新: %s -> %s", currentVersionName, remoteVersionName)
+	//			default:
+	//				log.Infof("检测到协议更新: %s -> %s", currentVersionName, remoteVersionName)
+	//				log.Infof("由于使用了会话缓存, 无法自动更新协议, 请删除缓存后重试")
+	//			}
+	//		}
+	//	} else if err.Error() != "remote version unavailable" {
+	//		log.Warnf("检查协议更新失败: %v", err)
+	//	}
+	//}
 	if !isTokenLogin {
 		if !isQRCodeLogin {
 			if err := commonLogin(); err != nil {
@@ -334,7 +317,7 @@ func LoginInteract() {
 				break
 			}
 			log.Warnf("尝试重连...")
-			err := cli.TokenLogin(base.AccountToken)
+			err := cli.FastLogin(nil)
 			if err == nil {
 				saveToken()
 				return
@@ -354,18 +337,21 @@ func LoginInteract() {
 		}
 	})
 	saveToken()
-	cli.AllowSlider = true
-	log.Infof("登录成功 欢迎使用: %v", cli.Nickname)
+	//cli.AllowSlider = true
+	log.Infof("登录成功 欢迎使用: %v", cli.NickName())
 	log.Info("开始加载好友列表...")
-	global.Check(cli.ReloadFriendList(), true)
-	log.Infof("共加载 %v 个好友.", len(cli.FriendList))
+	global.Check(cli.RefreshFriendCache(), true)
+	friendListLen := len(cli.GetCachedAllFriendsInfo())
+	log.Infof("共加载 %v 个好友.", friendListLen)
 	log.Infof("开始加载群列表...")
-	global.Check(cli.ReloadGroupList(), true)
-	log.Infof("共加载 %v 个群.", len(cli.GroupList))
-	if uint(base.Account.Status) >= uint(len(allowStatus)) {
-		base.Account.Status = 0
-	}
-	cli.SetOnlineStatus(allowStatus[base.Account.Status])
+	global.Check(cli.RefreshAllGroupsInfo(), true)
+	GroupListLen := len(cli.GetCachedAllGroupsInfo())
+	log.Infof("共加载 %v 个群.", GroupListLen)
+	// TODO 设置在线状态 不支持？
+	//if uint(base.Account.Status) >= uint(len(allowStatus)) {
+	//	base.Account.Status = 0
+	//}
+	//cli.SetOnlineStatus(allowStatus[base.Account.Status])
 	servers.Run(coolq.NewQQBot(cli))
 	log.Info("资源初始化完成, 开始处理信息.")
 	log.Info("アトリは、高性能ですから!")
@@ -378,7 +364,8 @@ func LoginInteract() {
 func WaitSignal() {
 	go func() {
 		selfupdate.CheckUpdate()
-		selfdiagnosis.NetworkDiagnosis(cli)
+		// TODO 服务器连接质量测试
+		//selfdiagnosis.NetworkDiagnosis(cli)
 	}()
 
 	<-global.SetupMainSignalHandler()
@@ -416,20 +403,28 @@ func PasswordHashDecrypt(encryptedPasswordHash string, key []byte) ([]byte, erro
 }
 
 func newClient() *client.QQClient {
-	c := client.NewClientEmpty()
-	c.OnServerUpdated(func(bot *client.QQClient, e *client.ServerUpdatedEvent) bool {
-		if !base.UseSSOAddress {
-			log.Infof("收到服务器地址更新通知, 根据配置文件已忽略.")
-			return false
-		}
-		log.Infof("收到服务器地址更新通知, 将在下一次重连时应用. ")
-		return true
-	})
+	var signUrl string
+	if len(base.SignServers) != 0 {
+		signUrl = base.SignServers[0].URL
+	} else {
+		signUrl = ""
+	}
+	c := client.NewClient(0, signUrl, auth.AppList["linux"])
+	// TODO 服务器更新通知
+	//c.OnServerUpdated(func(bot *client.QQClient, e *client.ServerUpdatedEvent) bool {
+	//	if !base.UseSSOAddress {
+	//		log.Infof("收到服务器地址更新通知, 根据配置文件已忽略.")
+	//		return false
+	//	}
+	//	log.Infof("收到服务器地址更新通知, 将在下一次重连时应用. ")
+	//	return true
+	//})
 	if global.PathExists("address.txt") {
 		log.Infof("检测到 address.txt 文件. 将覆盖目标IP.")
 		addr := global.ReadAddrFile("address.txt")
 		if len(addr) > 0 {
-			c.SetCustomServer(addr)
+			// TODO 使用自定义服务器
+			//c.SetCustomServer(addr)
 		}
 		log.Infof("读取到 %v 个自定义地址.", len(addr))
 	}
@@ -437,22 +432,22 @@ func newClient() *client.QQClient {
 	return c
 }
 
-var remoteVersions = map[int]string{
-	1: "https://raw.githubusercontent.com/RomiChan/protocol-versions/master/android_phone.json",
-	6: "https://raw.githubusercontent.com/RomiChan/protocol-versions/master/android_pad.json",
-}
-
-func getRemoteLatestProtocolVersion(protocolType int) ([]byte, error) {
-	url, ok := remoteVersions[protocolType]
-	if !ok {
-		return nil, errors.New("remote version unavailable")
-	}
-	response, err := download.Request{URL: url}.Bytes()
-	if err != nil {
-		return download.Request{URL: "https://ghproxy.com/" + url}.Bytes()
-	}
-	return response, nil
-}
+//var remoteVersions = map[int]string{
+//	1: "https://raw.githubusercontent.com/RomiChan/protocol-versions/master/android_phone.json",
+//	6: "https://raw.githubusercontent.com/RomiChan/protocol-versions/master/android_pad.json",
+//}
+//
+//func getRemoteLatestProtocolVersion(protocolType int) ([]byte, error) {
+//	url, ok := remoteVersions[protocolType]
+//	if !ok {
+//		return nil, errors.New("remote version unavailable")
+//	}
+//	response, err := download.Request{URL: url}.Bytes()
+//	if err != nil {
+//		return download.Request{URL: "https://ghproxy.com/" + url}.Bytes()
+//	}
+//	return response, nil
+//}
 
 type protocolLogger struct{}
 
