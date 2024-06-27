@@ -3,13 +3,14 @@ package gocq
 import (
 	"bufio"
 	"bytes"
-	"image"
+	"image/color"
 	"image/png"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/LagrangeDev/LagrangeGo/client/packets/wtlogin/qrcodeState"
+	"github.com/Mrs4s/go-cqhttp/utils/ternary"
 
 	"github.com/LagrangeDev/LagrangeGo/client/auth"
 
@@ -66,27 +67,43 @@ func commonLogin() error {
 }
 
 func printQRCode(imgData []byte) {
+	// (".", "^", " ", "@") : ("▄", "▀", " ", "█")
 	const (
-		black = "\033[48;5;0m  \033[0m"
-		white = "\033[48;5;7m  \033[0m"
+		bb = "█"
+		wb = "▄"
+		bw = "▀"
+		ww = " "
 	)
 	img, err := png.Decode(bytes.NewReader(imgData))
 	if err != nil {
 		log.Panic(err)
 	}
-	data := img.(*image.Gray).Pix
+
 	bound := img.Bounds().Max.X
-	buf := make([]byte, 0, (bound*4+1)*(bound))
-	i := 0
-	for y := 0; y < bound; y++ {
-		i = y * bound
-		for x := 0; x < bound; x++ {
-			if data[i] != 255 {
-				buf = append(buf, white...)
-			} else {
-				buf = append(buf, black...)
+	buf := make([]byte, 0, (bound+1)*(bound/2+ternary.BV(bound%2 == 0, 0, 1)))
+
+	padding := 0
+	lastColor := img.At(padding, padding).(color.Gray).Y
+	for padding += 1; padding < bound; padding++ {
+		if img.At(padding, padding).(color.Gray).Y != lastColor {
+			break
+		}
+	}
+
+	for y := padding; y < bound-padding; y += 2 {
+		for x := padding; x < bound-padding; x++ {
+			isUpWhite := img.At(x, y).(color.Gray).Y == 255
+			isDownWhite := ternary.BV(y < bound-padding, img.At(x, y+1).(color.Gray).Y == 255, false)
+
+			if !isUpWhite && !isDownWhite {
+				buf = append(buf, bb...)
+			} else if isUpWhite && !isDownWhite {
+				buf = append(buf, wb...)
+			} else if !isUpWhite && isDownWhite {
+				buf = append(buf, bw...)
+			} else if isUpWhite && isDownWhite {
+				buf = append(buf, ww...)
 			}
-			i++
 		}
 		buf = append(buf, '\n')
 	}
