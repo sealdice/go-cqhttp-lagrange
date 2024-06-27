@@ -33,7 +33,7 @@ account: # 账号相关
   # 服务器可使用docker在本地搭建或者使用他人开放的服务
   sign-servers: 
     - url: 'https://sign.lagrangecore.org/api/sign'  # 主签名服务器地址， 必填
-    - url: '-'  # 备用
+    - url: 'https://sign.0w0.ing/api/sign'  # 备用
 
   # 判断签名服务不可用（需要切换）的额外规则
   # 0: 不设置 （此时仅在请求无法返回结果时判定为不可用）

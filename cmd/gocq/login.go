@@ -94,7 +94,7 @@ func printQRCode(imgData []byte) {
 }
 
 func qrcodeLogin() error {
-	qrcodeData, _, err := cli.FecthQRCode()
+	qrcodeData, _, err := cli.FetchQRCode(1, 2, 1)
 	if err != nil {
 		return err
 	}
