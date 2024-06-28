@@ -2,9 +2,7 @@
 package msg
 
 import (
-	"bytes"
-
-	"github.com/Mrs4s/go-cqhttp/utils/binary"
+	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 
 	"strings"
 	"unicode/utf8"
@@ -137,8 +135,8 @@ func (e *Element) WriteCQCodeTo(sb *strings.Builder) {
 
 // MarshalJSON see encoding/json.Marshaler
 func (e *Element) MarshalJSON() ([]byte, error) {
-	return binary.NewWriterF(func(w *binary.Writer) {
-		buf := (*bytes.Buffer)(w)
+	return binary.NewWriterF(func(w *binary.Builder) {
+		buf := w.Buffer()
 		// fmt.Fprintf(buf, `{"type":"%s","data":{`, e.Type)
 		buf.WriteString(`{"type":"`)
 		buf.WriteString(e.Type)

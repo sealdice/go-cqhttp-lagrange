@@ -6,12 +6,13 @@ import (
 	"path"
 	"strings"
 
+	"github.com/LagrangeDev/LagrangeGo/utils/binary"
+
 	"github.com/LagrangeDev/LagrangeGo/client/entity"
 
 	event2 "github.com/LagrangeDev/LagrangeGo/client/event"
 
 	"github.com/LagrangeDev/LagrangeGo/message"
-	"github.com/Mrs4s/go-cqhttp/utils/binary"
 
 	"github.com/LagrangeDev/LagrangeGo/client"
 	log "github.com/sirupsen/logrus"
@@ -544,11 +545,11 @@ func (bot *CQBot) checkMedia(e []message.IMessageElement, sourceID int64) {
 			//		i.Url = u
 			//	}
 			//}
-			data := binary.NewWriterF(func(w *binary.Writer) {
+			data := binary.NewWriterF(func(w *binary.Builder) {
 				w.Write(i.Md5)
-				w.WriteUInt32(uint32(i.Size))
-				w.WriteString(i.ImageId)
-				w.WriteString(i.Url)
+				w.WriteU32(i.Size)
+				w.WritePacketString(i.ImageId, "u32", true)
+				w.WritePacketString(i.Url, "u32", true)
 			})
 			cache.Image.Insert(i.Md5, data)
 

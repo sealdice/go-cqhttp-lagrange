@@ -3,15 +3,22 @@ package global
 import (
 	"bytes"
 
-	"github.com/Mrs4s/go-cqhttp/utils/binary"
+	"github.com/LagrangeDev/LagrangeGo/utils/binary"
+	"github.com/RomiChan/syncx"
 )
+
+var bufferTable syncx.Map[*bytes.Buffer, *binary.Builder]
 
 // NewBuffer 从池中获取新 bytes.Buffer
 func NewBuffer() *bytes.Buffer {
-	return (*bytes.Buffer)(binary.SelectWriter())
+	builder := binary.SelectBuilder(nil)
+	bufferTable.Store(builder.Buffer(), builder)
+	return builder.Buffer()
 }
 
 // PutBuffer 将 Buffer放入池中
 func PutBuffer(buf *bytes.Buffer) {
-	binary.PutWriter((*binary.Writer)(buf))
+	if v, ok := bufferTable.LoadAndDelete(buf); ok {
+		binary.PutBuilder(v)
+	}
 }

@@ -12,13 +12,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/LagrangeDev/LagrangeGo/utils/binary"
+
 	"github.com/Mrs4s/go-cqhttp/internal/mime"
 	"golang.org/x/image/webp"
 
 	"github.com/LagrangeDev/LagrangeGo/client/entity"
 	event2 "github.com/LagrangeDev/LagrangeGo/client/event"
 	"github.com/Mrs4s/go-cqhttp/utils"
-	"github.com/Mrs4s/go-cqhttp/utils/binary"
 
 	"github.com/LagrangeDev/LagrangeGo/client"
 	"github.com/LagrangeDev/LagrangeGo/message"
@@ -622,8 +623,8 @@ func formatMemberName(mem *entity.GroupMember) string {
 
 // encodeMessageID 临时先这样, 暂时用不上
 func encodeMessageID(target int64, seq int32) string {
-	return hex.EncodeToString(binary.NewWriterF(func(w *binary.Writer) {
-		w.WriteUInt64(uint64(target))
-		w.WriteUInt32(uint32(seq))
+	return hex.EncodeToString(binary.NewWriterF(func(w *binary.Builder) {
+		w.WriteU64(uint64(target))
+		w.WriteU32(uint32(seq))
 	}))
 }

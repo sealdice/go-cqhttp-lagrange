@@ -1,13 +1,14 @@
 package sqlite3
 
 import (
-	"github.com/Mrs4s/go-cqhttp/utils/binary"
 	"hash/crc64"
 	"os"
 	"path"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 
 	"github.com/Mrs4s/go-cqhttp/utils"
 
@@ -231,11 +232,11 @@ func (s *database) InsertGroupMessage(msg *db.StoredGroupMessage) error {
 	}
 	h := crc64.New(crc64.MakeTable(crc64.ISO))
 	if msg.Attribute != nil {
-		h.Write(binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteUInt32(uint32(msg.Attribute.MessageSeq))
-			w.WriteUInt32(uint32(msg.Attribute.InternalID))
-			w.WriteUInt64(uint64(msg.Attribute.SenderUin))
-			w.WriteUInt64(uint64(msg.Attribute.Timestamp))
+		h.Write(binary.NewWriterF(func(w *binary.Builder) {
+			w.WriteU32(uint32(msg.Attribute.MessageSeq))
+			w.WriteU32(uint32(msg.Attribute.InternalID))
+			w.WriteU64(uint64(msg.Attribute.SenderUin))
+			w.WriteU64(uint64(msg.Attribute.Timestamp))
 		}))
 		h.Write(utils.S2B(msg.Attribute.SenderName))
 		id := int64(h.Sum64())
@@ -264,8 +265,8 @@ func (s *database) InsertGroupMessage(msg *db.StoredGroupMessage) error {
 	}
 	if msg.QuotedInfo != nil {
 		h.Write(utils.S2B(msg.QuotedInfo.PrevID))
-		h.Write(binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteUInt32(uint32(msg.QuotedInfo.PrevGlobalID))
+		h.Write(binary.NewWriterF(func(w *binary.Builder) {
+			w.WriteU32(uint32(msg.QuotedInfo.PrevGlobalID))
 		}))
 		content, err := yaml.Marshal(&msg.QuotedInfo)
 		if err != nil {
@@ -312,11 +313,11 @@ func (s *database) InsertPrivateMessage(msg *db.StoredPrivateMessage) error {
 	}
 	h := crc64.New(crc64.MakeTable(crc64.ISO))
 	if msg.Attribute != nil {
-		h.Write(binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteUInt32(uint32(msg.Attribute.MessageSeq))
-			w.WriteUInt32(uint32(msg.Attribute.InternalID))
-			w.WriteUInt64(uint64(msg.Attribute.SenderUin))
-			w.WriteUInt64(uint64(msg.Attribute.Timestamp))
+		h.Write(binary.NewWriterF(func(w *binary.Builder) {
+			w.WriteU32(uint32(msg.Attribute.MessageSeq))
+			w.WriteU32(uint32(msg.Attribute.InternalID))
+			w.WriteU64(uint64(msg.Attribute.SenderUin))
+			w.WriteU64(uint64(msg.Attribute.Timestamp))
 		}))
 		h.Write(utils.S2B(msg.Attribute.SenderName))
 		id := int64(h.Sum64())
@@ -345,8 +346,8 @@ func (s *database) InsertPrivateMessage(msg *db.StoredPrivateMessage) error {
 	}
 	if msg.QuotedInfo != nil {
 		h.Write(utils.S2B(msg.QuotedInfo.PrevID))
-		h.Write(binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteUInt32(uint32(msg.QuotedInfo.PrevGlobalID))
+		h.Write(binary.NewWriterF(func(w *binary.Builder) {
+			w.WriteU32(uint32(msg.QuotedInfo.PrevGlobalID))
 		}))
 		content, err := yaml.Marshal(&msg.QuotedInfo)
 		if err != nil {
