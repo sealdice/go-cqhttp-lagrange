@@ -237,54 +237,54 @@ func (bot *CQBot) groupRecallEvent(c *client.QQClient, e *event2.GroupRecall) {
 }
 
 //TODO 群通知
-/*
-func (bot *CQBot) groupNotifyEvent(c *client.QQClient, e client.INotifyEvent) {
-	group := c.FindGroup(e.From())
+
+func (bot *CQBot) groupNotifyEvent(c *client.QQClient, e event2.INotifyEvent) {
+	group := c.GetCachedGroupInfo(e.From())
 	switch notify := e.(type) {
-	case *client.GroupPokeNotifyEvent:
-		sender := group.FindMember(notify.Sender)
-		receiver := group.FindMember(notify.Receiver)
+	case *event2.GroupPokeEvent:
+		sender := c.GetCachedMemberInfo(notify.Sender, e.From())
+		receiver := c.GetCachedMemberInfo(notify.Receiver, e.From())
 		log.Infof("群 %v 内 %v 戳了戳 %v", formatGroupName(group), formatMemberName(sender), formatMemberName(receiver))
 		bot.dispatchEvent("notice/notify/poke", global.MSG{
-			"group_id":  group.Code,
+			"group_id":  group.GroupUin,
 			"user_id":   notify.Sender,
 			"sender_id": notify.Sender,
 			"target_id": notify.Receiver,
 		})
-	case *client.GroupRedBagLuckyKingNotifyEvent:
-		sender := group.FindMember(notify.Sender)
-		luckyKing := group.FindMember(notify.LuckyKing)
-		log.Infof("群 %v 内 %v 的红包被抢完, %v 是运气王", formatGroupName(group), formatMemberName(sender), formatMemberName(luckyKing))
-		bot.dispatchEvent("notice/notify/lucky_king", global.MSG{
-			"group_id":  group.Code,
-			"user_id":   notify.Sender,
-			"sender_id": notify.Sender,
-			"target_id": notify.LuckyKing,
-		})
-	case *client.MemberHonorChangedNotifyEvent:
-		log.Info(notify.Content())
-		bot.dispatchEvent("notice/notify/honor", global.MSG{
-			"group_id": group.Code,
-			"user_id":  notify.Uin,
-			"honor_type": func() string {
-				switch notify.Honor {
-				case client.Talkative:
-					return "talkative"
-				case client.Performer:
-					return "performer"
-				case client.Emotion:
-					return "emotion"
-				case client.Legend:
-					return "legend"
-				case client.StrongNewbie:
-					return "strong_newbie"
-				default:
-					return "ERROR"
-				}
-			}(),
-		})
+		//case *client.GroupRedBagLuckyKingNotifyEvent:
+		//	sender := group.FindMember(notify.Sender)
+		//	luckyKing := group.FindMember(notify.LuckyKing)
+		//	log.Infof("群 %v 内 %v 的红包被抢完, %v 是运气王", formatGroupName(group), formatMemberName(sender), formatMemberName(luckyKing))
+		//	bot.dispatchEvent("notice/notify/lucky_king", global.MSG{
+		//		"group_id":  group.Code,
+		//		"user_id":   notify.Sender,
+		//		"sender_id": notify.Sender,
+		//		"target_id": notify.LuckyKing,
+		//	})
+		//case *client.MemberHonorChangedNotifyEvent:
+		//	log.Info(notify.Content())
+		//	bot.dispatchEvent("notice/notify/honor", global.MSG{
+		//		"group_id": group.Code,
+		//		"user_id":  notify.Uin,
+		//		"honor_type": func() string {
+		//			switch notify.Honor {
+		//			case client.Talkative:
+		//				return "talkative"
+		//			case client.Performer:
+		//				return "performer"
+		//			case client.Emotion:
+		//				return "emotion"
+		//			case client.Legend:
+		//				return "legend"
+		//			case client.StrongNewbie:
+		//				return "strong_newbie"
+		//			default:
+		//				return "ERROR"
+		//			}
+		//		}(),
+		//	})
 	}
-}*/
+}
 
 // TODO 好友通知
 /*

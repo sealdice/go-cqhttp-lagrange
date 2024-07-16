@@ -41,7 +41,7 @@ type CQBot struct {
 	lock   sync.RWMutex
 	events []func(*Event)
 
-	friendReqCache syncx.Map[string, *event2.FriendRequest]
+	friendReqCache syncx.Map[string, *event2.NewFriendRequest]
 	//tempSessionCache syncx.Map[int64, *event2.]
 }
 
@@ -86,8 +86,8 @@ func NewQQBot(cli *client.QQClient) *CQBot {
 	//bot.Client.TempMessageEvent.Subscribe(bot.tempMessageEvent)
 	bot.Client.GroupMuteEvent.Subscribe(bot.groupMutedEvent)
 	bot.Client.GroupRecallEvent.Subscribe(bot.groupRecallEvent)
-	// TODO 群聊通知消息 戳一戳，运气王
-	//bot.Client.GroupNotifyEvent.Subscribe(bot.groupNotifyEvent)
+	// TODO 群聊通知消息 运气王
+	bot.Client.GroupNotifyEvent.Subscribe(bot.groupNotifyEvent)
 	// TODO 好友戳一戳事件
 	//bot.Client.FriendNotifyEvent.Subscribe(bot.friendNotifyEvent)
 	// TODO 成员获得特殊群头衔
@@ -317,7 +317,7 @@ func (bot *CQBot) SendGroupMessage(groupID int64, m *message.SendingMessage) (in
 		//	return bot.InsertGroupMessage(ret, source), nil
 		case *message.AtElement:
 			self := bot.Client.GetCachedMemberInfo(bot.Client.Uin, uint32(groupID))
-			if i.Target == 0 && self.Permission == entity.Member {
+			if i.TargetUin == 0 && self.Permission == entity.Member {
 				e = message.NewText("@全体成员")
 			}
 		}
@@ -505,8 +505,8 @@ func (bot *CQBot) InsertGroupMessage(m *message.GroupMessage, source message.Sou
 		reply := replyElem.(*message.ReplyElement)
 		msg.SubType = "quote"
 		msg.QuotedInfo = &db.QuotedInfo{
-			PrevID:        encodeMessageID(int64(m.GroupCode), reply.ReplySeq),
-			PrevGlobalID:  db.ToGlobalID(int64(m.GroupCode), reply.ReplySeq),
+			PrevID:        encodeMessageID(int64(m.GroupCode), int32(reply.ReplySeq)),
+			PrevGlobalID:  db.ToGlobalID(int64(m.GroupCode), int32(reply.ReplySeq)),
 			QuotedContent: ToMessageContent(reply.Elements, source),
 		}
 	}
@@ -548,8 +548,8 @@ func (bot *CQBot) InsertPrivateMessage(m *message.PrivateMessage, source message
 		reply := replyElem.(*message.ReplyElement)
 		msg.SubType = "quote"
 		msg.QuotedInfo = &db.QuotedInfo{
-			PrevID:        encodeMessageID(int64(reply.Sender), reply.ReplySeq),
-			PrevGlobalID:  db.ToGlobalID(int64(reply.Sender), reply.ReplySeq),
+			PrevID:        encodeMessageID(int64(reply.SenderUin), int32(reply.ReplySeq)),
+			PrevGlobalID:  db.ToGlobalID(int64(reply.SenderUin), int32(reply.ReplySeq)),
 			QuotedContent: ToMessageContent(reply.Elements, source),
 		}
 	}

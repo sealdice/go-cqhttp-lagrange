@@ -206,8 +206,9 @@ func LoginInteract() {
 		time.Sleep(time.Second * 5)
 	}
 	log.Info("开始尝试登录并同步消息...")
-	log.Infof("使用协议: %s", "linux")
-	cli = newClient()
+	app := auth.AppList["linux"]["3.2.10-25765"]
+	log.Infof("使用协议: %s %s", app.OS, app.CurrentVersion)
+	cli = newClient(app)
 	cli.UseDevice(device)
 	isQRCodeLogin := (base.Account.Uin == 0 || len(base.Account.Password) == 0) && !base.Account.Encrypt
 	isTokenLogin := false
@@ -240,7 +241,7 @@ func LoginInteract() {
 				time.Sleep(time.Second)
 				cli.Disconnect()
 				cli.Release()
-				cli = newClient()
+				cli = newClient(app)
 				cli.UseDevice(device)
 			} else {
 				isTokenLogin = true
@@ -402,14 +403,14 @@ func PasswordHashDecrypt(encryptedPasswordHash string, key []byte) ([]byte, erro
 	return result, nil
 }
 
-func newClient() *client.QQClient {
+func newClient(appInfo *auth.AppInfo) *client.QQClient {
 	var signUrl string
 	if len(base.SignServers) != 0 {
 		signUrl = base.SignServers[0].URL
 	} else {
 		signUrl = ""
 	}
-	c := client.NewClient(0, signUrl, auth.AppList["linux"])
+	c := client.NewClient(0, signUrl, appInfo)
 	// TODO 服务器更新通知
 	//c.OnServerUpdated(func(bot *client.QQClient, e *client.ServerUpdatedEvent) bool {
 	//	if !base.UseSSOAddress {

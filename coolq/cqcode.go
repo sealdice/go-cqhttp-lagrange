@@ -45,17 +45,18 @@ const (
 func replyID(r *message.ReplyElement, source message.Source) int32 {
 	id := source.PrimaryID
 	seq := r.ReplySeq
-	if r.GroupID != 0 {
-		id = int64(r.GroupID)
+	if r.GroupUin != 0 {
+		id = int64(r.GroupUin)
 	}
-	// 私聊时，部分（不确定）的账号会在 ReplyElement 中带有 GroupID 字段。
-	// 这里需要判断是由于 “直接回复” 功能，GroupID 为触发直接回复的来源那个群。
-	if source.SourceType == message.SourcePrivate && (r.Sender == uint64(source.PrimaryID) || r.GroupID == uint64(source.PrimaryID) || r.GroupID == 0) {
+	// 私聊时，部分（不确定）的账号会在 ReplyElement 中带有 GroupUin 字段。
+	// 这里需要判断是由于 “直接回复” 功能，GroupUin 为触发直接回复的来源那个群。
+	if source.SourceType == message.SourcePrivate && (r.SenderUin == uint32(source.PrimaryID) || r.GroupUin == uint32(source.PrimaryID) || r.GroupUin == 0) {
 		// 私聊似乎腾讯服务器有bug?
-		seq = int32(uint16(seq))
-		id = int64(r.Sender)
+		// ?
+		seq = seq
+		id = int64(r.SenderUin)
 	}
-	return db.ToGlobalID(id, seq)
+	return db.ToGlobalID(id, int32(seq))
 }
 
 // toElements 将消息元素数组转为MSG数组以用于消息上报
@@ -84,7 +85,7 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 		if base.ExtraReplyData {
 			elem.Data = append(elem.Data,
 				pair{K: "seq", V: strconv.FormatInt(int64(replyElem.ReplySeq), 10)},
-				pair{K: "qq", V: strconv.FormatInt(int64(replyElem.Sender), 10)},
+				pair{K: "qq", V: strconv.FormatInt(int64(replyElem.SenderUin), 10)},
 				pair{K: "time", V: strconv.FormatInt(int64(replyElem.Time), 10)},
 				pair{K: "text", V: toStringMessage(replyElem.Elements, source)},
 			)
@@ -97,7 +98,7 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 		case *message.ReplyElement:
 			if base.RemoveReplyAt && i+1 < len(e) {
 				elem, ok := e[i+1].(*message.AtElement)
-				if ok && elem.Target == uint32(o.Sender) {
+				if ok && elem.TargetUin == uint32(o.SenderUin) {
 					e[i+1] = nil
 				}
 			}
@@ -119,8 +120,8 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 		//	}
 		case *message.AtElement:
 			target := "all"
-			if o.Target != 0 {
-				target = strconv.FormatUint(uint64(o.Target), 10)
+			if o.TargetUin != 0 {
+				target = strconv.FormatUint(uint64(o.TargetUin), 10)
 			}
 			m = msg.Element{
 				Type: "at",
@@ -299,7 +300,7 @@ func ToMessageContent(e []message.IMessageElement, source message.Source) (r []g
 		//		"data": global.MSG{"data": o.Content},
 		//	}
 		case *message.AtElement:
-			if o.Target == 0 {
+			if o.TargetUin == 0 {
 				m = global.MSG{
 					"type": "at",
 					"data": global.MSG{
@@ -311,7 +312,7 @@ func ToMessageContent(e []message.IMessageElement, source message.Source) (r []g
 					"type": "at",
 					"data": global.MSG{
 						"subType": "user",
-						"target":  o.Target,
+						"target":  o.TargetUin,
 						"display": o.Display,
 					},
 				}
@@ -486,27 +487,27 @@ func (bot *CQBot) reply(spec *onebot.Spec, elem msg.Element, sourceType message.
 		}
 		if org != nil {
 			re = &message.ReplyElement{
-				ReplySeq: org.GetAttribute().MessageSeq,
-				Sender:   uint64(org.GetAttribute().SenderUin),
-				Time:     int32(org.GetAttribute().Timestamp),
-				Elements: bot.ConvertStringMessage(spec, customText, sourceType),
+				ReplySeq:  uint32(org.GetAttribute().MessageSeq),
+				SenderUin: uint32(org.GetAttribute().SenderUin),
+				Time:      uint32(org.GetAttribute().Timestamp),
+				Elements:  bot.ConvertStringMessage(spec, customText, sourceType),
 			}
 			if senderErr != nil {
-				re.Sender = uint64(sender)
+				re.SenderUin = uint32(sender)
 			}
 			if timeErr != nil {
-				re.Time = int32(msgTime)
+				re.Time = uint32(msgTime)
 			}
 			if seqErr != nil {
-				re.ReplySeq = int32(messageSeq)
+				re.ReplySeq = uint32(messageSeq)
 			}
 			break
 		}
 		re = &message.ReplyElement{
-			ReplySeq: int32(messageSeq),
-			Sender:   uint64(sender),
-			Time:     int32(msgTime),
-			Elements: bot.ConvertStringMessage(spec, customText, sourceType),
+			ReplySeq:  uint32(messageSeq),
+			SenderUin: uint32(sender),
+			Time:      uint32(msgTime),
+			Elements:  bot.ConvertStringMessage(spec, customText, sourceType),
 		}
 
 	case err == nil:
@@ -515,10 +516,10 @@ func (bot *CQBot) reply(spec *onebot.Spec, elem msg.Element, sourceType message.
 			return nil, err
 		}
 		re = &message.ReplyElement{
-			ReplySeq: org.GetAttribute().MessageSeq,
-			Sender:   uint64(org.GetAttribute().SenderUin),
-			Time:     int32(org.GetAttribute().Timestamp),
-			Elements: bot.ConvertContentMessage(org.GetContent(), sourceType, true),
+			ReplySeq:  uint32(org.GetAttribute().MessageSeq),
+			SenderUin: uint32(org.GetAttribute().SenderUin),
+			Time:      uint32(org.GetAttribute().Timestamp),
+			Elements:  bot.ConvertContentMessage(org.GetContent(), sourceType, true),
 		}
 
 	default:
