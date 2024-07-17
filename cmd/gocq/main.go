@@ -3,7 +3,6 @@ package gocq
 
 import (
 	"crypto/aes"
-	"crypto/md5"
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
@@ -17,11 +16,9 @@ import (
 	"github.com/LagrangeDev/LagrangeGo/client/auth"
 
 	"github.com/LagrangeDev/LagrangeGo/client"
-	para "github.com/fumiama/go-hide-param"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/pbkdf2"
-	"golang.org/x/term"
 
 	"github.com/Mrs4s/go-cqhttp/coolq"
 	"github.com/Mrs4s/go-cqhttp/db"
@@ -105,7 +102,6 @@ func PrepareData() {
 
 // LoginInteract 登录交互, 可能需要键盘输入, 必须在 InitBase, PrepareData 之后执行
 func LoginInteract() {
-	var byteKey []byte
 	arg := os.Args
 	if len(arg) > 1 {
 		for i := range arg {
@@ -116,18 +112,12 @@ func LoginInteract() {
 				} else {
 					selfupdate.SelfUpdate("")
 				}
-			case "key":
-				p := i + 1
-				if len(arg) > p {
-					byteKey = []byte(arg[p])
-					para.Hide(p)
-				}
 			}
 		}
 	}
 
-	if (base.Account.Uin == 0 || (base.Account.Password == "" && !base.Account.Encrypt)) && !global.PathExists("session.token") {
-		log.Warn("账号密码未配置, 将使用二维码登录.")
+	if !global.PathExists("session.token") {
+		log.Info("不存在会话缓存，使用二维码登录.")
 		if !base.FastStart {
 			log.Warn("将在 5秒 后继续.")
 			time.Sleep(time.Second * 5)
@@ -152,55 +142,6 @@ func LoginInteract() {
 		}
 	}
 
-	if base.Account.Encrypt {
-		if !global.PathExists("password.encrypt") {
-			if base.Account.Password == "" {
-				log.Error("无法进行加密，请在配置文件中的添加密码后重新启动.")
-			} else {
-				log.Infof("密码加密已启用, 请输入Key对密码进行加密: (Enter 提交)")
-				byteKey, _ = term.ReadPassword(int(os.Stdin.Fd()))
-				base.PasswordHash = md5.Sum([]byte(base.Account.Password))
-				_ = os.WriteFile("password.encrypt", []byte(PasswordHashEncrypt(base.PasswordHash[:], byteKey)), 0o644)
-				log.Info("密码已加密，为了您的账号安全，请删除配置文件中的密码后重新启动.")
-			}
-			readLine()
-			os.Exit(0)
-		}
-		if base.Account.Password != "" {
-			log.Error("密码已加密，为了您的账号安全，请删除配置文件中的密码后重新启动.")
-			readLine()
-			os.Exit(0)
-		}
-		if len(byteKey) == 0 {
-			log.Infof("密码加密已启用, 请输入Key对密码进行解密以继续: (Enter 提交)")
-			cancel := make(chan struct{}, 1)
-			state, _ := term.GetState(int(os.Stdin.Fd()))
-			go func() {
-				select {
-				case <-cancel:
-					return
-				case <-time.After(time.Second * 45):
-					log.Infof("解密key输入超时")
-					time.Sleep(3 * time.Second)
-					_ = term.Restore(int(os.Stdin.Fd()), state)
-					os.Exit(0)
-				}
-			}()
-			byteKey, _ = term.ReadPassword(int(os.Stdin.Fd()))
-			cancel <- struct{}{}
-		} else {
-			log.Infof("密码加密已启用, 使用运行时传递的参数进行解密，按 Ctrl+C 取消.")
-		}
-
-		encrypt, _ := os.ReadFile("password.encrypt")
-		ph, err := PasswordHashDecrypt(string(encrypt), byteKey)
-		if err != nil {
-			log.Fatalf("加密存储的密码损坏，请尝试重新配置密码")
-		}
-		copy(base.PasswordHash[:], ph)
-	} else if len(base.Account.Password) > 0 {
-		base.PasswordHash = md5.Sum([]byte(base.Account.Password))
-	}
 	if !base.FastStart {
 		log.Info("Bot将在5秒后登录并开始信息处理, 按 Ctrl+C 取消.")
 		time.Sleep(time.Second * 5)
@@ -210,7 +151,7 @@ func LoginInteract() {
 	log.Infof("使用协议: %s %s", app.OS, app.CurrentVersion)
 	cli = newClient(app)
 	cli.UseDevice(device)
-	isQRCodeLogin := (base.Account.Uin == 0 || len(base.Account.Password) == 0) && !base.Account.Encrypt
+	isQRCodeLogin := true
 	isTokenLogin := false
 
 	saveToken := func() {
@@ -221,20 +162,6 @@ func LoginInteract() {
 		token, _ := os.ReadFile("session.token")
 		sig, err := auth.UnmarshalSigInfo(token, true)
 		if err == nil {
-			if base.Account.Uin != 0 {
-				if int64(sig.Uin) != base.Account.Uin {
-					log.Warnf("警告: 配置文件内的QQ号 (%v) 与缓存内的QQ号 (%v) 不相同", base.Account.Uin, sig.Uin)
-					log.Warnf("1. 使用会话缓存继续.")
-					log.Warnf("2. 删除会话缓存并重启.")
-					log.Warnf("请选择:")
-					text := readIfTTY("1")
-					if text == "2" {
-						_ = os.Remove("session.token")
-						log.Infof("缓存已删除.")
-						os.Exit(0)
-					}
-				}
-			}
 			if err = cli.FastLogin(&sig); err != nil {
 				_ = os.Remove("session.token")
 				log.Warnf("恢复会话失败: %v , 尝试使用正常流程登录.", err)
@@ -248,43 +175,9 @@ func LoginInteract() {
 			}
 		}
 	}
-	//if base.Account.Uin != 0 && base.PasswordHash != [16]byte{} {
-	//	cli.Uin = base.Account.Uin
-	//	cli.PasswordMd5 = base.PasswordHash
-	//}
-	//download.SetTimeout(time.Duration(base.HTTPTimeout) * time.Second)
-	//if !base.FastStart {
-	//	log.Infof("正在检查协议更新...")
-	//	currentVersionName := device.Protocol.Version().SortVersionName
-	//	remoteVersion, err := getRemoteLatestProtocolVersion(int(device.Protocol.Version().Protocol))
-	//	if err == nil {
-	//		remoteVersionName := gjson.GetBytes(remoteVersion, "sort_version_name").String()
-	//		if remoteVersionName != currentVersionName {
-	//			switch {
-	//			case !base.UpdateProtocol:
-	//				log.Infof("检测到协议更新: %s -> %s", currentVersionName, remoteVersionName)
-	//				log.Infof("如果登录时出现版本过低错误, 可尝试使用 -update-protocol 参数启动")
-	//			case !isTokenLogin:
-	//				_ = device.Protocol.Version().UpdateFromJson(remoteVersion)
-	//				log.Infof("协议版本已更新: %s -> %s", currentVersionName, remoteVersionName)
-	//			default:
-	//				log.Infof("检测到协议更新: %s -> %s", currentVersionName, remoteVersionName)
-	//				log.Infof("由于使用了会话缓存, 无法自动更新协议, 请删除缓存后重试")
-	//			}
-	//		}
-	//	} else if err.Error() != "remote version unavailable" {
-	//		log.Warnf("检查协议更新失败: %v", err)
-	//	}
-	//}
 	if !isTokenLogin {
-		if !isQRCodeLogin {
-			if err := commonLogin(); err != nil {
-				log.Fatalf("登录时发生致命错误: %v", err)
-			}
-		} else {
-			if err := qrcodeLogin(); err != nil {
-				log.Fatalf("登录时发生致命错误: %v", err)
-			}
+		if err := qrcodeLogin(); err != nil {
+			log.Fatalf("登录时发生致命错误: %v", err)
 		}
 	}
 	var times uint = 1 // 重试次数
@@ -329,7 +222,7 @@ func LoginInteract() {
 			}
 			log.Warnf("快速重连失败, 尝试普通登录. 这可能是因为其他端强行T下线导致的.")
 			time.Sleep(time.Second)
-			if err := commonLogin(); err != nil {
+			if err := qrcodeLogin(); err != nil {
 				log.Errorf("登录时发生致命错误: %v", err)
 			} else {
 				saveToken()
@@ -338,7 +231,7 @@ func LoginInteract() {
 		}
 	})
 	saveToken()
-	//cli.AllowSlider = true
+	// cli.AllowSlider = true
 	log.Infof("登录成功 欢迎使用: %v", cli.NickName())
 	log.Info("开始加载好友列表...")
 	global.Check(cli.RefreshFriendCache(), true)
@@ -349,7 +242,7 @@ func LoginInteract() {
 	GroupListLen := len(cli.GetCachedAllGroupsInfo())
 	log.Infof("共加载 %v 个群.", GroupListLen)
 	// TODO 设置在线状态 不支持？
-	//if uint(base.Account.Status) >= uint(len(allowStatus)) {
+	// if uint(base.Account.Status) >= uint(len(allowStatus)) {
 	//	base.Account.Status = 0
 	//}
 	//cli.SetOnlineStatus(allowStatus[base.Account.Status])
@@ -366,7 +259,7 @@ func WaitSignal() {
 	go func() {
 		selfupdate.CheckUpdate()
 		// TODO 服务器连接质量测试
-		//selfdiagnosis.NetworkDiagnosis(cli)
+		// selfdiagnosis.NetworkDiagnosis(cli)
 	}()
 
 	<-global.SetupMainSignalHandler()
@@ -412,7 +305,7 @@ func newClient(appInfo *auth.AppInfo) *client.QQClient {
 	}
 	c := client.NewClient(0, signUrl, appInfo)
 	// TODO 服务器更新通知
-	//c.OnServerUpdated(func(bot *client.QQClient, e *client.ServerUpdatedEvent) bool {
+	// c.OnServerUpdated(func(bot *client.QQClient, e *client.ServerUpdatedEvent) bool {
 	//	if !base.UseSSOAddress {
 	//		log.Infof("收到服务器地址更新通知, 根据配置文件已忽略.")
 	//		return false
@@ -425,7 +318,7 @@ func newClient(appInfo *auth.AppInfo) *client.QQClient {
 		addr := global.ReadAddrFile("address.txt")
 		if len(addr) > 0 {
 			// TODO 使用自定义服务器
-			//c.SetCustomServer(addr)
+			// c.SetCustomServer(addr)
 		}
 		log.Infof("读取到 %v 个自定义地址.", len(addr))
 	}
@@ -433,7 +326,7 @@ func newClient(appInfo *auth.AppInfo) *client.QQClient {
 	return c
 }
 
-//var remoteVersions = map[int]string{
+// var remoteVersions = map[int]string{
 //	1: "https://raw.githubusercontent.com/RomiChan/protocol-versions/master/android_phone.json",
 //	6: "https://raw.githubusercontent.com/RomiChan/protocol-versions/master/android_pad.json",
 //}
