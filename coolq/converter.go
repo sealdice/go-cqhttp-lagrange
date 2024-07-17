@@ -50,7 +50,7 @@ func convertGroupMemberInfo(groupID int64, m *entity.GroupMember) global.MSG {
 func (bot *CQBot) formatGroupMessage(m *message.GroupMessage) *event {
 	source := message.Source{
 		SourceType: message.SourceGroup,
-		PrimaryID:  int64(m.GroupCode),
+		PrimaryID:  int64(m.GroupUin),
 	}
 	cqm := toStringMessage(m.Elements, source)
 	typ := "message/group/normal"
@@ -60,7 +60,7 @@ func (bot *CQBot) formatGroupMessage(m *message.GroupMessage) *event {
 	gm := global.MSG{
 		"anonymous":   nil,
 		"font":        0,
-		"group_id":    m.GroupCode,
+		"group_id":    m.GroupUin,
 		"message":     ToFormattedMessage(m.Elements, source),
 		"message_seq": m.Id,
 		"raw_message": cqm,
@@ -82,15 +82,15 @@ func (bot *CQBot) formatGroupMessage(m *message.GroupMessage) *event {
 		gm["sender"].(global.MSG)["nickname"] = "匿名消息"
 		typ = "message/group/anonymous"
 	} else {
-		mem := bot.Client.GetCachedMemberInfo(m.Sender.Uin, m.GroupCode)
+		mem := bot.Client.GetCachedMemberInfo(m.Sender.Uin, m.GroupUin)
 		if mem == nil {
 			log.Warnf("获取 %v 成员信息失败，尝试刷新成员列表", m.Sender.Uin)
-			err := bot.Client.RefreshGroupMembersCache(m.GroupCode)
+			err := bot.Client.RefreshGroupMembersCache(m.GroupUin)
 			if err != nil {
-				log.Warnf("刷新群 %v 成员列表失败: %v", m.GroupCode, err)
+				log.Warnf("刷新群 %v 成员列表失败: %v", m.GroupUin, err)
 				return nil
 			}
-			mem = bot.Client.GetCachedMemberInfo(m.Sender.Uin, m.GroupCode)
+			mem = bot.Client.GetCachedMemberInfo(m.Sender.Uin, m.GroupUin)
 			if mem == nil {
 				return nil
 			}

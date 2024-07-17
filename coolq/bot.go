@@ -340,7 +340,7 @@ func (bot *CQBot) SendGroupMessage(groupID int64, m *message.SendingMessage) (in
 	return bot.InsertGroupMessage(&message.GroupMessage{
 		Id:         int32(ret.GroupSequence.Unwrap()),
 		InternalId: int32(ret.Timestamp1),
-		GroupCode:  uint32(groupID),
+		GroupUin:   uint32(groupID),
 		GroupName:  group.GroupName,
 		Sender: &message.Sender{
 			Uin:           bot.Client.Uin,
@@ -482,8 +482,8 @@ func (bot *CQBot) InsertGroupMessage(m *message.GroupMessage, source message.Sou
 		return ok
 	})
 	msg := &db.StoredGroupMessage{
-		ID:       encodeMessageID(int64(m.GroupCode), m.Id),
-		GlobalID: db.ToGlobalID(int64(m.GroupCode), m.Id),
+		ID:       encodeMessageID(int64(m.GroupUin), m.Id),
+		GlobalID: db.ToGlobalID(int64(m.GroupUin), m.Id),
 		SubType:  "normal",
 		Attribute: &db.StoredMessageAttribute{
 			MessageSeq: m.Id,
@@ -492,7 +492,7 @@ func (bot *CQBot) InsertGroupMessage(m *message.GroupMessage, source message.Sou
 			SenderName: m.Sender.CardName,
 			Timestamp:  int64(m.Time),
 		},
-		GroupCode: int64(m.GroupCode),
+		GroupCode: int64(m.GroupUin),
 		AnonymousID: func() string {
 			if m.Sender.IsAnonymous() {
 				return m.Sender.AnonymousInfo.AnonymousId
@@ -505,8 +505,8 @@ func (bot *CQBot) InsertGroupMessage(m *message.GroupMessage, source message.Sou
 		reply := replyElem.(*message.ReplyElement)
 		msg.SubType = "quote"
 		msg.QuotedInfo = &db.QuotedInfo{
-			PrevID:        encodeMessageID(int64(m.GroupCode), int32(reply.ReplySeq)),
-			PrevGlobalID:  db.ToGlobalID(int64(m.GroupCode), int32(reply.ReplySeq)),
+			PrevID:        encodeMessageID(int64(m.GroupUin), int32(reply.ReplySeq)),
+			PrevGlobalID:  db.ToGlobalID(int64(m.GroupUin), int32(reply.ReplySeq)),
 			QuotedContent: ToMessageContent(reply.Elements, source),
 		}
 	}

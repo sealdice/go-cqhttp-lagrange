@@ -107,7 +107,7 @@ func (bot *CQBot) privateMessageEvent(_ *client.QQClient, m *message.PrivateMess
 }
 
 func (bot *CQBot) groupMessageEvent(c *client.QQClient, m *message.GroupMessage) {
-	bot.checkMedia(m.Elements, int64(m.GroupCode))
+	bot.checkMedia(m.Elements, int64(m.GroupUin))
 	// TODO 群聊文件上传
 	//for _, elem := range m.Elements {
 	//	if file, ok := elem.(*message.GroupFileElement); ok {
@@ -128,11 +128,11 @@ func (bot *CQBot) groupMessageEvent(c *client.QQClient, m *message.GroupMessage)
 	//}
 	source := message.Source{
 		SourceType: message.SourceGroup,
-		PrimaryID:  int64(m.GroupCode),
+		PrimaryID:  int64(m.GroupUin),
 	}
 	cqm := toStringMessage(m.Elements, source)
 	id := bot.InsertGroupMessage(m, source)
-	log.Infof("收到群 %v(%v) 内 %v(%v) 的消息: %v (%v)", m.GroupName, m.GroupCode, m.Sender.CardName, m.Sender.Uin, cqm, id)
+	log.Infof("收到群 %v(%v) 内 %v(%v) 的消息: %v (%v)", m.GroupName, m.GroupUin, m.Sender.CardName, m.Sender.Uin, cqm, id)
 	gm := bot.formatGroupMessage(m)
 	if gm == nil {
 		return
