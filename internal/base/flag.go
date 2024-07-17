@@ -37,9 +37,7 @@ var (
 	LogColorful         bool                // 是否启用日志颜色
 	FastStart           bool                // 是否为快速启动
 	AllowTempSession    bool                // 是否允许发送临时会话信息
-	UpdateProtocol      bool                // 是否更新协议
 	SignServers         []config.SignServer // 使用特定的服务器进行签名
-	IsBelow110          bool                // 签名服务器版本是否低于1.1.0及以下
 	HTTPTimeout         int                 // download 超时时间
 	SignServerTimeout   int                 // 签名服务器超时时间
 
@@ -65,7 +63,6 @@ func Parse() {
 	flag.StringVar(&LittleWD, "w", "", "cover the working directory")
 	d := flag.Bool("D", false, "debug mode")
 	flag.BoolVar(&FastStart, "faststart", false, "skip waiting 5 seconds")
-	flag.BoolVar(&UpdateProtocol, "update-protocol", false, "update protocol")
 	flag.Parse()
 
 	if *d {
@@ -91,7 +88,6 @@ func Init() {
 		UseSSOAddress = conf.Account.UseSSOAddress
 		AllowTempSession = conf.Account.AllowTempSession
 		SignServers = conf.Account.SignServers
-		IsBelow110 = conf.Account.IsBelow110
 		HTTPTimeout = conf.Message.HTTPTimeout
 		SignServerTimeout = int(conf.Account.SignServerTimeout)
 	}
