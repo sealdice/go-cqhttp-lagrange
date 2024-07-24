@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/LagrangeDev/LagrangeGo/utils/binary"
@@ -286,11 +287,9 @@ func (bot *CQBot) groupNotifyEvent(c *client.QQClient, e event2.INotifyEvent) {
 	}
 }
 
-// TODO 好友通知
-/*
-func (bot *CQBot) friendNotifyEvent(c *client.QQClient, e client.INotifyEvent) {
-	friend := c.FindFriend(e.From())
-	if notify, ok := e.(*client.FriendPokeNotifyEvent); ok {
+func (bot *CQBot) friendNotifyEvent(c *client.QQClient, e event2.INotifyEvent) {
+	friend := c.GetCachedFriendInfo(e.From())
+	if notify, ok := e.(*event2.FriendPokeEvent); ok {
 		if notify.Receiver == notify.Sender {
 			log.Infof("好友 %v 戳了戳自己.", friend.Nickname)
 		} else {
@@ -302,19 +301,19 @@ func (bot *CQBot) friendNotifyEvent(c *client.QQClient, e client.INotifyEvent) {
 			"target_id": notify.Receiver,
 		})
 	}
-}*/
+}
 
 // TODO 获得新头衔
-/*func (bot *CQBot) memberTitleUpdatedEvent(c *client.QQClient, e *client.MemberSpecialTitleUpdatedEvent) {
-	group := c.FindGroup(e.GroupCode)
-	mem := group.FindMember(e.Uin)
-	log.Infof("群 %v(%v) 内成员 %v(%v) 获得了新的头衔: %v", group.Name, group.Code, mem.DisplayName(), mem.Uin, e.NewTitle)
+func (bot *CQBot) memberTitleUpdatedEvent(c *client.QQClient, e *event2.MemberSpecialTitleUpdated) {
+	group := c.GetCachedGroupInfo(e.GroupUin)
+	mem := c.GetCachedMemberInfo(e.Uin, e.GroupUin)
+	log.Infof("群 %v(%v) 内成员 %v(%v) 获得了新的头衔: %v", group.GroupName, group.GroupUin, mem.MemberCard, mem.Uin, e.NewTitle)
 	bot.dispatchEvent("notice/notify/title", global.MSG{
-		"group_id": group.Code,
+		"group_id": group.GroupUin,
 		"user_id":  e.Uin,
 		"title":    e.NewTitle,
 	})
-}*/
+}
 
 func (bot *CQBot) friendRecallEvent(c *client.QQClient, e *event2.FriendRecall) {
 	f := c.GetCachedFriendInfo(c.GetUin(e.FromUid))
@@ -350,35 +349,32 @@ func (bot *CQBot) friendRecallEvent(c *client.QQClient, e *event2.FriendRecall) 
 }*/
 
 // TODO bot自身进群退群
-//func (bot *CQBot) joinGroupEvent(c *client.QQClient, group *entity.Group) {
-//	if group == nil {
-//		return
-//	}
-//	log.Infof("Bot进入了群 %v.", formatGroupName(group))
-//	bot.dispatch(bot.groupIncrease(int64(group.GroupUin), 0, int64(c.Uin)))
-//}
-//
-//func (bot *CQBot) leaveGroupEvent(c *client.QQClient, e *client.GroupLeaveEvent) {
-//	if e.Operator != nil {
-//		log.Infof("Bot被 %v T出了群 %v.", formatMemberName(e.Operator), formatGroupName(e.Group))
-//	} else {
-//		log.Infof("Bot退出了群 %v.", formatGroupName(e.Group))
-//	}
-//	bot.dispatch(bot.groupDecrease(e.Group.Code, c.Uin, e.Operator))
-//}
+func (bot *CQBot) joinGroupEvent(c *client.QQClient, event *event2.GroupMemberIncrease) {
+	log.Infof("Bot进入了群 %v.", formatGroupName(c.GetCachedGroupInfo(event.GroupUin)))
+	bot.dispatch(bot.groupIncrease(int64(event.GroupUin), 0, int64(c.Uin)))
+}
 
-// TODO 群权限变更和名片变更
-//func (bot *CQBot) memberPermissionChangedEvent(_ *client.QQClient, e *client.MemberPermissionChangedEvent) {
-//	st := "unset"
-//	if e.NewPermission == client.Administrator {
-//		st = "set"
-//	}
-//	bot.dispatchEvent("notice/group_admin/"+st, global.MSG{
-//		"group_id": e.Group.Code,
-//		"user_id":  e.Member.Uin,
-//	})
-//}
-//
+func (bot *CQBot) leaveGroupEvent(c *client.QQClient, e *event2.GroupMemberDecrease) {
+	if e.IsKicked() {
+		log.Infof("Bot被 %v T出了群 %v.", formatMemberName(c.GetCachedMemberInfo(e.OperatorUin, e.GroupUin)), formatGroupName(c.GetCachedGroupInfo(e.GroupUin)))
+	} else {
+		log.Infof("Bot退出了群 %v.", formatGroupName(c.GetCachedGroupInfo(e.GroupUin)))
+	}
+	bot.dispatch(bot.groupDecrease(int64(e.GroupUin), int64(c.Uin), c.GetCachedMemberInfo(e.OperatorUin, e.GroupUin)))
+}
+
+func (bot *CQBot) memberPermissionChangedEvent(_ *client.QQClient, e *event2.GroupMemberPermissionChanged) {
+	st := "unset"
+	if e.IsAdmin {
+		st = "set"
+	}
+	bot.dispatchEvent("notice/group_admin/"+st, global.MSG{
+		"group_id": e.GroupUin,
+		"user_id":  e.TargetUin,
+	})
+}
+
+// TODO 群名片变更
 //func (bot *CQBot) memberCardUpdatedEvent(_ *client.QQClient, e *client.MemberCardUpdatedEvent) {
 //	log.Infof("群 %v 的 %v 更新了名片 %v -> %v", formatGroupName(e.Group), formatMemberName(e.Member), e.OldCard, e.Member.CardName)
 //	bot.dispatchEvent("notice/group_card", global.MSG{
@@ -389,18 +385,16 @@ func (bot *CQBot) friendRecallEvent(c *client.QQClient, e *event2.FriendRecall) 
 //	})
 //}
 
-// TODO 群成员增加，已实现，等缓存问题解决
-//func (bot *CQBot) memberJoinEvent(c *client.QQClient, e *event2.GroupMemberIncrease) {
-//	log.Infof("新成员 %v 进入了群 %v.", formatMemberName(c.GetCachedMemberInfo()), formatGroupName(e.Group))
-//	bot.dispatch(bot.groupIncrease(e.Group.Code, 0, e.Member.Uin))
-//}
+func (bot *CQBot) memberJoinEvent(c *client.QQClient, e *event2.GroupMemberIncrease) {
+	log.Infof("新成员 %v 进入了群 %v.", formatMemberName(c.GetCachedMemberInfo(e.MemberUin, e.GroupUin)), formatGroupName(c.GetCachedGroupInfo(e.GroupUin)))
+	bot.dispatch(bot.groupIncrease(int64(e.GroupUin), 0, int64(e.MemberUin)))
+}
 
 func (bot *CQBot) memberLeaveEvent(c *client.QQClient, e *event2.GroupMemberDecrease) {
 	member := c.GetCachedMemberInfo(c.GetUin(e.MemberUid), e.GroupUin)
 	op := c.GetCachedMemberInfo(c.GetUin(e.OperatorUid), e.GroupUin)
 	group := c.GetCachedGroupInfo(e.GroupUin)
 	if e.IsKicked() {
-
 		log.Infof("成员 %v 被 %v T出了群 %v.", formatMemberName(member), formatMemberName(op), formatGroupName(group))
 	} else {
 		log.Infof("成员 %v 离开了群 %v.", formatMemberName(member), formatGroupName(group))
@@ -409,8 +403,8 @@ func (bot *CQBot) memberLeaveEvent(c *client.QQClient, e *event2.GroupMemberDecr
 }
 
 // TODO 实现了，但是不想写
-//func (bot *CQBot) friendRequestEvent(_ *client.QQClient, e *client.NewFriendRequest) {
-//	log.Infof("收到来自 %v(%v) 的好友请求: %v", e.RequesterNick, e.RequesterUin, e.Message)
+//func (bot *CQBot) friendRequestEvent(_ *client.QQClient, e *event2.NewFriendRequest) {
+//	log.Infof("收到来自 %v(%v) 的好友请求: %v", e., e.RequesterUin, e.Message)
 //	flag := strconv.FormatInt(e.RequestId, 10)
 //	bot.friendReqCache.Store(flag, e)
 //	bot.dispatchEvent("request/friend", global.MSG{
@@ -428,29 +422,31 @@ func (bot *CQBot) memberLeaveEvent(c *client.QQClient, e *event2.GroupMemberDecr
 //	})
 //}
 
-//func (bot *CQBot) groupInvitedEvent(_ *client.QQClient, e *client.GroupInvitedRequest) {
-//	log.Infof("收到来自群 %v(%v) 内用户 %v(%v) 的加群邀请.", e.GroupName, e.GroupCode, e.InvitorNick, e.InvitorUin)
-//	flag := strconv.FormatInt(e.RequestId, 10)
-//	bot.dispatchEvent("request/group/invite", global.MSG{
-//		"group_id":   e.GroupCode,
-//		"user_id":    e.InvitorUin,
-//		"invitor_id": 0,
-//		"comment":    "",
-//		"flag":       flag,
-//	})
-//}
+func (bot *CQBot) groupInvitedEvent(_ *client.QQClient, e *event2.GroupInvite) {
+	// todo: 暂时先这样吧，群名不好拿
+	log.Infof("收到来自群 %v(%v) 内用户 %v(%v) 的加群邀请.", e.GroupUin, e.GroupUin, e.InvitorNick, e.InvitorUin)
+	flag := strconv.FormatInt(int64(e.RequestSeq), 10)
+	bot.dispatchEvent("request/group/invite", global.MSG{
+		"group_id":   e.GroupUin,
+		"user_id":    e.InvitorUin,
+		"invitor_id": 0,
+		"comment":    "",
+		"flag":       flag,
+	})
+}
 
-//func (bot *CQBot) groupJoinReqEvent(_ *client.QQClient, e *client.UserJoinGroupRequest) {
-//	log.Infof("群 %v(%v) 收到来自用户 %v(%v) 的加群请求.", e.GroupName, e.GroupCode, e.RequesterNick, e.RequesterUin)
-//	flag := strconv.FormatInt(e.RequestId, 10)
-//	bot.dispatchEvent("request/group/add", global.MSG{
-//		"group_id":   e.GroupCode,
-//		"user_id":    e.RequesterUin,
-//		"invitor_id": e.ActionUin,
-//		"comment":    e.Message,
-//		"flag":       flag,
-//	})
-//}
+func (bot *CQBot) groupJoinReqEvent(c *client.QQClient, e *event2.GroupMemberJoinRequest) {
+	group := c.GetCachedGroupInfo(e.GroupUin)
+	log.Infof("群 %v(%v) 收到来自用户 %v(%v) 的加群请求.", group.GroupName, e.GroupUin, e.TargetNick, e.TargetUin)
+	flag := strconv.FormatInt(int64(e.RequestSeq), 10)
+	bot.dispatchEvent("request/group/add", global.MSG{
+		"group_id":   e.GroupUin,
+		"user_id":    e.TargetUin,
+		"invitor_id": e.InvitorUin,
+		"comment":    e.Answer,
+		"flag":       flag,
+	})
+}
 
 //func (bot *CQBot) otherClientStatusChangedEvent(_ *client.QQClient, e *client.OtherClientStatusChangedEvent) {
 //	if e.Online {
@@ -469,40 +465,40 @@ func (bot *CQBot) memberLeaveEvent(c *client.QQClient, e *event2.GroupMemberDecr
 //}
 
 // TODO 精华消息
-//func (bot *CQBot) groupEssenceMsg(c *client.QQClient, e *client.GroupDigestEvent) {
-//	g := c.FindGroup(e.GroupCode)
-//	gid := db.ToGlobalID(e.GroupCode, e.MessageID)
-//	if e.OperationType == 1 {
-//		log.Infof(
-//			"群 %v 内 %v 将 %v 的消息(%v)设为了精华消息.",
-//			formatGroupName(g),
-//			formatMemberName(g.FindMember(e.OperatorUin)),
-//			formatMemberName(g.FindMember(e.SenderUin)),
-//			gid,
-//		)
-//	} else {
-//		log.Infof(
-//			"群 %v 内 %v 将 %v 的消息(%v)移出了精华消息.",
-//			formatGroupName(g),
-//			formatMemberName(g.FindMember(e.OperatorUin)),
-//			formatMemberName(g.FindMember(e.SenderUin)),
-//			gid,
-//		)
-//	}
-//	if e.OperatorUin == bot.Client.Uin {
-//		return
-//	}
-//	subtype := "delete"
-//	if e.OperationType == 1 {
-//		subtype = "add"
-//	}
-//	bot.dispatchEvent("notice/essence/"+subtype, global.MSG{
-//		"group_id":    e.GroupCode,
-//		"sender_id":   e.SenderUin,
-//		"operator_id": e.OperatorUin,
-//		"message_id":  gid,
-//	})
-//}
+func (bot *CQBot) groupEssenceMsg(c *client.QQClient, e *event2.GroupDigestEvent) {
+	g := c.GetCachedGroupInfo(e.GroupUin)
+	gid := db.ToGlobalID(int64(e.GroupUin), int32(e.MessageID))
+	if e.OperationType == 1 {
+		log.Infof(
+			"群 %v 内 %v 将 %v 的消息(%v)设为了精华消息.",
+			formatGroupName(g),
+			formatMemberName(c.GetCachedMemberInfo(e.OperatorUin, e.GroupUin)),
+			formatMemberName(c.GetCachedMemberInfo(e.SenderUin, e.GroupUin)),
+			gid,
+		)
+	} else {
+		log.Infof(
+			"群 %v 内 %v 将 %v 的消息(%v)移出了精华消息.",
+			formatGroupName(g),
+			formatMemberName(c.GetCachedMemberInfo(e.OperatorUin, e.GroupUin)),
+			formatMemberName(c.GetCachedMemberInfo(e.SenderUin, e.GroupUin)),
+			gid,
+		)
+	}
+	if e.OperatorUin == bot.Client.Uin {
+		return
+	}
+	subtype := "delete"
+	if e.IsSet() {
+		subtype = "add"
+	}
+	bot.dispatchEvent("notice/essence/"+subtype, global.MSG{
+		"group_id":    e.GroupUin,
+		"sender_id":   e.SenderUin,
+		"operator_id": e.OperatorUin,
+		"message_id":  gid,
+	})
+}
 
 func (bot *CQBot) groupIncrease(groupCode, operatorUin, userUin int64) *event {
 	return bot.event("notice/group_increase/approve", global.MSG{

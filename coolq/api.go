@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/LagrangeDev/LagrangeGo/client/entity"
 
@@ -121,7 +122,7 @@ func (bot *CQBot) CQGetFriendList(spec *onebot.Spec) global.MSG {
 // @route(get_group_list)
 func (bot *CQBot) CQGetGroupList(noCache bool, spec *onebot.Spec) global.MSG {
 	if noCache {
-		_ = bot.Client.RefreshAllGroupsInfo
+		_ = bot.Client.RefreshAllGroupsInfo()
 	}
 	grpInfos := bot.Client.GetCachedAllGroupsInfo()
 	gs := make([]global.MSG, 0, len(grpInfos))
@@ -145,7 +146,7 @@ func (bot *CQBot) CQGetGroupList(noCache bool, spec *onebot.Spec) global.MSG {
 // @route(get_group_info)
 func (bot *CQBot) CQGetGroupInfo(groupID int64, noCache bool, spec *onebot.Spec) global.MSG {
 	if noCache {
-		_ = bot.Client.RefreshAllGroupsInfo
+		_ = bot.Client.RefreshAllGroupsInfo()
 	}
 	group := bot.Client.GetCachedGroupInfo(uint32(groupID))
 	if group != nil {
@@ -167,7 +168,7 @@ func (bot *CQBot) CQGetGroupInfo(groupID int64, noCache bool, spec *onebot.Spec)
 // @route(get_group_member_list)
 func (bot *CQBot) CQGetGroupMemberList(groupID int64, noCache bool) global.MSG {
 	if noCache {
-		_ = bot.Client.RefreshAllGroupsInfo
+		_ = bot.Client.RefreshAllGroupsInfo()
 	}
 	groupMembers := bot.Client.GetCachedMembersInfo(uint32(groupID))
 	if groupMembers == nil {
@@ -874,53 +875,52 @@ func (bot *CQBot) CQSetGroupLeave(groupID int64) global.MSG {
 //	return OK(nil)
 //}
 
-// TODO 计划实现的api 处理加群请求／邀请
 // CQProcessGroupRequest 处理加群请求／邀请
 //
 // https://git.io/Jtz1D
 // @route(set_group_add_request)
 // @rename(sub_type->"[sub_type\x2Ctype].0")
 // @default(approve=true)
-//func (bot *CQBot) CQProcessGroupRequest(flag, subType, reason string, approve bool) global.MSG {
-//	msgs, err := bot.Client.GetGroupSystemMessages()
-//	if err != nil {
-//		log.Warnf("获取群系统消息失败: %v", err)
-//		return Failed(100, "SYSTEM_MSG_API_ERROR", err.Error())
-//	}
-//	if subType == "add" {
-//		for _, req := range msgs.JoinRequests {
-//			if strconv.FormatInt(req.RequestId, 10) == flag {
-//				if req.Checked {
-//					log.Warnf("处理群系统消息失败: 无法操作已处理的消息.")
-//					return Failed(100, "FLAG_HAS_BEEN_CHECKED", "消息已被处理")
-//				}
-//				if approve {
-//					req.Accept()
-//				} else {
-//					req.Reject(false, reason)
-//				}
-//				return OK(nil)
-//			}
-//		}
-//	} else {
-//		for _, req := range msgs.InvitedRequests {
-//			if strconv.FormatInt(req.RequestId, 10) == flag {
-//				if req.Checked {
-//					log.Warnf("处理群系统消息失败: 无法操作已处理的消息.")
-//					return Failed(100, "FLAG_HAS_BEEN_CHECKED", "消息已被处理")
-//				}
-//				if approve {
-//					req.Accept()
-//				} else {
-//					req.Reject(false, reason)
-//				}
-//				return OK(nil)
-//			}
-//		}
-//	}
-//	log.Warnf("处理群系统消息失败: 消息 %v 不存在.", flag)
-//	return Failed(100, "FLAG_NOT_FOUND", "FLAG不存在")
-//}
+func (bot *CQBot) CQProcessGroupRequest(flag, subType, reason string, approve bool) global.MSG {
+	msgs, err := bot.Client.GetGroupSystemMessages()
+	if err != nil {
+		log.Warnf("获取群系统消息失败: %v", err)
+		return Failed(100, "SYSTEM_MSG_API_ERROR", err.Error())
+	}
+	if subType == "add" {
+		for _, req := range msgs {
+			if strconv.FormatInt(int64(req.Sequence), 10) == flag {
+				if req.Checked() {
+					log.Warnf("处理群系统消息失败: 无法操作已处理的消息.")
+					return Failed(100, "FLAG_HAS_BEEN_CHECKED", "消息已被处理")
+				}
+				if approve {
+					bot.Client.SetGroupRequest(true, req.Sequence, req.EventType, req.GroupUin, "")
+				} else {
+					bot.Client.SetGroupRequest(false, req.Sequence, req.EventType, req.GroupUin, reason)
+				}
+				return OK(nil)
+			}
+		}
+	} else {
+		for _, req := range msgs {
+			if strconv.FormatInt(int64(req.Sequence), 10) == flag {
+				if req.Checked() {
+					log.Warnf("处理群系统消息失败: 无法操作已处理的消息.")
+					return Failed(100, "FLAG_HAS_BEEN_CHECKED", "消息已被处理")
+				}
+				if approve {
+					bot.Client.SetGroupRequest(true, req.Sequence, req.EventType, req.GroupUin, "")
+				} else {
+					bot.Client.SetGroupRequest(false, req.Sequence, req.EventType, req.GroupUin, reason)
+				}
+				return OK(nil)
+			}
+		}
+	}
+	log.Warnf("处理群系统消息失败: 消息 %v 不存在.", flag)
+	return Failed(100, "FLAG_NOT_FOUND", "FLAG不存在")
+}
 
 // CQDeleteMessage 撤回消息
 //
@@ -1164,17 +1164,17 @@ func (bot *CQBot) CQHandleQuickOperation(context, operation gjson.Result) global
 				}
 			}
 		}
-		// TODO 暂未支持
-		//case "request":
-		//	reqType := context.Get("request_type").Str
-		//	if operation.Get("approve").Exists() {
-		//		if reqType == "friend" {
-		//			bot.CQProcessFriendRequest(context.Get("flag").String(), operation.Get("approve").Bool())
-		//		}
-		//		if reqType == "group" {
-		//			bot.CQProcessGroupRequest(context.Get("flag").String(), context.Get("sub_type").Str, operation.Get("reason").Str, operation.Get("approve").Bool())
-		//		}
-		//	}
+	case "request":
+		reqType := context.Get("request_type").Str
+		if operation.Get("approve").Exists() {
+			// TODO 暂未支持
+			//if reqType == "friend" {
+			//	bot.CQProcessFriendRequest(context.Get("flag").String(), operation.Get("approve").Bool())
+			//}
+			if reqType == "group" {
+				bot.CQProcessGroupRequest(context.Get("flag").String(), context.Get("sub_type").Str, operation.Get("reason").Str, operation.Get("approve").Bool())
+			}
+		}
 	}
 	return OK(nil)
 }

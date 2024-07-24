@@ -86,20 +86,17 @@ func NewQQBot(cli *client.QQClient) *CQBot {
 	//bot.Client.TempMessageEvent.Subscribe(bot.tempMessageEvent)
 	bot.Client.GroupMuteEvent.Subscribe(bot.groupMutedEvent)
 	bot.Client.GroupRecallEvent.Subscribe(bot.groupRecallEvent)
-	// TODO 群聊通知消息 运气王
 	bot.Client.GroupNotifyEvent.Subscribe(bot.groupNotifyEvent)
-	// TODO 好友戳一戳事件
-	//bot.Client.FriendNotifyEvent.Subscribe(bot.friendNotifyEvent)
-	// TODO 成员获得特殊群头衔
-	//bot.Client.MemberSpecialTitleUpdatedEvent.Subscribe(bot.memberTitleUpdatedEvent)
+	bot.Client.FriendNotifyEvent.Subscribe(bot.friendNotifyEvent)
+	bot.Client.MemberSpecialTitleUpdatedEvent.Subscribe(bot.memberTitleUpdatedEvent)
 	bot.Client.FriendRecallEvent.Subscribe(bot.friendRecallEvent)
 	// TODO 离线文件
 	//bot.Client.OfflineFileEvent.Subscribe(bot.offlineFileEvent)
 	// TODO bot加群
-	//bot.Client.GroupJoinEvent.Subscribe(bot.joinGroupEvent)
+	bot.Client.GroupJoinEvent.Subscribe(bot.joinGroupEvent)
 	// TODO bot退群
-	//bot.Client.GroupLeaveEvent.Subscribe(bot.leaveGroupEvent)
-	//bot.Client.GroupMemberJoinEvent.Subscribe(bot.memberJoinEvent)
+	bot.Client.GroupLeaveEvent.Subscribe(bot.leaveGroupEvent)
+	bot.Client.GroupMemberJoinEvent.Subscribe(bot.memberJoinEvent)
 	bot.Client.GroupMemberLeaveEvent.Subscribe(bot.memberLeaveEvent)
 	// TODO 群成员权限变更
 	//bot.Client.GroupMemberPermissionChangedEvent.Subscribe(bot.memberPermissionChangedEvent)
@@ -113,7 +110,7 @@ func NewQQBot(cli *client.QQClient) *CQBot {
 	// TODO 客户端变更
 	//bot.Client.OtherClientStatusChangedEvent.Subscribe(bot.otherClientStatusChangedEvent)
 	// TODO 精华消息
-	//bot.Client.GroupDigestEvent.Subscribe(bot.groupEssenceMsg)
+	bot.Client.GroupDigestEvent.Subscribe(bot.groupEssenceMsg)
 	go func() {
 		if base.HeartbeatInterval == 0 {
 			log.Warn("警告: 心跳功能已关闭，若非预期，请检查配置文件。")
@@ -330,30 +327,11 @@ func (bot *CQBot) SendGroupMessage(groupID int64, m *message.SendingMessage) (in
 	m.Elements = newElem
 	bot.checkMedia(newElem, groupID)
 	ret, err := bot.Client.SendGroupMessage(uint32(groupID), m.Elements)
-	if err != nil || ret == nil || ret.GroupSequence.IsNone() {
+	if err != nil || ret == nil {
 		log.Warnf("群 %v 发送消息失败: 账号可能被风控.", groupID)
 		return -1, errors.New("send group message failed: blocked by server")
 	}
-	// TODO 发送完成之后获取*message.GroupMessage
-	group := bot.Client.GetCachedGroupInfo(uint32(groupID))
-	minfo := bot.Client.GetCachedMemberInfo(bot.Client.Uin, uint32(groupID))
-	return bot.InsertGroupMessage(&message.GroupMessage{
-		Id:         int32(ret.GroupSequence.Unwrap()),
-		InternalId: int32(ret.Timestamp1),
-		GroupUin:   uint32(groupID),
-		GroupName:  group.GroupName,
-		Sender: &message.Sender{
-			Uin:           bot.Client.Uin,
-			Uid:           bot.Client.GetUid(bot.Client.Uin),
-			Nickname:      bot.Client.NickName(),
-			CardName:      minfo.MemberCard,
-			AnonymousInfo: nil,
-			IsFriend:      true,
-		},
-		Time:           uint64(ret.Timestamp1),
-		Elements:       m.Elements,
-		OriginalObject: nil,
-	}, source), nil
+	return bot.InsertGroupMessage(ret, source), nil
 }
 
 // SendPrivateMessage 发送私聊消息
@@ -401,22 +379,8 @@ func (bot *CQBot) SendPrivateMessage(target int64, groupID int64, m *message.Sen
 	//session, ok := bot.tempSessionCache.Load(target)
 	var id int32 = -1
 	ret, err := bot.Client.SendPrivateMessage(uint32(groupID), m.Elements)
-	if err != nil {
-		id = bot.InsertPrivateMessage(&message.PrivateMessage{
-			Id:         int32(ret.PrivateSequence),
-			InternalId: int32(ret.Timestamp1),
-			Self:       int64(bot.Client.Uin),
-			Target:     target,
-			Time:       int32(ret.Timestamp1),
-			Sender: &message.Sender{
-				Uin:           bot.Client.Uin,
-				Uid:           bot.Client.GetUid(bot.Client.Uin),
-				Nickname:      bot.Client.NickName(),
-				AnonymousInfo: nil,
-				IsFriend:      true,
-			},
-			Elements: nil,
-		}, source)
+	if err != nil || ret == nil {
+		id = bot.InsertPrivateMessage(ret, source)
 	}
 	//switch {
 	//case bot.Client.FindFriend(target) != nil: // 双向好友
@@ -424,7 +388,7 @@ func (bot *CQBot) SendPrivateMessage(target int64, groupID int64, m *message.Sen
 	//	if msg != nil {
 	//		id = bot.InsertPrivateMessage(msg, source)
 	//	}
-	// TODO 临时会话
+	// TODO 应该是不支持临时会话了
 	//case ok || groupID != 0: // 临时会话
 	//	if !base.AllowTempSession {
 	//		log.Warnf("发送临时会话消息失败: 已关闭临时会话信息发送功能")
@@ -618,7 +582,7 @@ func formatMemberName(mem *entity.GroupMember) string {
 	if mem == nil {
 		return "未知"
 	}
-	return fmt.Sprintf("%s(%d)", mem.MemberName, mem.Uin)
+	return fmt.Sprintf("%s(%d)", mem.DisplayName(), mem.Uin)
 }
 
 // encodeMessageID 临时先这样, 暂时用不上

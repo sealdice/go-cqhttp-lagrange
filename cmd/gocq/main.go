@@ -6,6 +6,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"net/url"
 	"os"
 	"path"
 	"sync"
@@ -297,13 +298,16 @@ func PasswordHashDecrypt(encryptedPasswordHash string, key []byte) ([]byte, erro
 }
 
 func newClient(appInfo *auth.AppInfo) *client.QQClient {
-	var signUrl string
-	if len(base.SignServers) != 0 {
-		signUrl = base.SignServers[0].URL
-	} else {
-		signUrl = ""
+	signUrls := make([]string, len(base.SignServers))
+	for i, s := range base.SignServers {
+		u, err := url.Parse(s.URL)
+		if err != nil || u.Hostname() == "" {
+			continue
+		}
+		signUrls[i] = u.String()
 	}
-	c := client.NewClient(0, signUrl, appInfo)
+	log.Warnf("signUrls: %#v", signUrls)
+	c := client.NewClient(0, appInfo, signUrls...)
 	// TODO 服务器更新通知
 	// c.OnServerUpdated(func(bot *client.QQClient, e *client.ServerUpdatedEvent) bool {
 	//	if !base.UseSSOAddress {

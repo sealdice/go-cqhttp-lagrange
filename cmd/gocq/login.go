@@ -3,6 +3,7 @@ package gocq
 import (
 	"bufio"
 	"bytes"
+	"image"
 	"image/color"
 	"image/png"
 	"os"
@@ -96,6 +97,34 @@ func printQRCode(imgData []byte) {
 			} else {
 				buf = append(buf, ww...)
 			}
+		}
+		buf = append(buf, '\n')
+	}
+	_, _ = colorable.NewColorableStdout().Write(buf)
+}
+
+func printQRCodeCommon(imgData []byte) {
+	const (
+		black = "\033[48;5;0m  \033[0m"
+		white = "\033[48;5;7m  \033[0m"
+	)
+	img, err := png.Decode(bytes.NewReader(imgData))
+	if err != nil {
+		log.Panic(err)
+	}
+	data := img.(*image.Gray).Pix
+	bound := img.Bounds().Max.X
+	buf := make([]byte, 0, (bound*4+1)*(bound))
+	i := 0
+	for y := 0; y < bound; y++ {
+		i = y * bound
+		for x := 0; x < bound; x++ {
+			if data[i] != 255 {
+				buf = append(buf, white...)
+			} else {
+				buf = append(buf, black...)
+			}
+			i++
 		}
 		buf = append(buf, '\n')
 	}

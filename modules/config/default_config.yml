@@ -22,10 +22,10 @@ account: # 账号相关
   #   - url: 'https://signserver.example.com' # 线上签名服务器
   #   ...
   # 
-  # 服务器不提供自建方法
+  # 服务器不提供自建
   sign-servers: 
     - url: 'https://sign.ciallo.site/api/sign'  # 主签名服务器地址， 必填
-    - url: '-'  # 备用
+    - url: 'https://sign.lagrangecore.org/api/sign/25765'  # 备用
 
   # 连续寻找可用签名服务器最大尝试次数
   # 为 0 时会在连续 3 次没有找到可用签名服务器后保持使用主签名服务器，不再尝试进行切换备用
