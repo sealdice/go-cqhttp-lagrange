@@ -102,7 +102,7 @@ func NewQQBot(cli *client.QQClient) *CQBot {
 	//bot.Client.GroupMemberPermissionChangedEvent.Subscribe(bot.memberPermissionChangedEvent)
 	// TODO 群成员名片更新
 	//bot.Client.MemberCardUpdatedEvent.Subscribe(bot.memberCardUpdatedEvent)
-	//bot.Client.FriendRequestEvent.Subscribe(bot.friendRequestEvent)
+	bot.Client.NewFriendRequestEvent.Subscribe(bot.friendRequestEvent)
 	// TODO 成为好友
 	//bot.Client.NewFriendEvent.Subscribe(bot.friendAddedEvent)
 	//bot.Client.GroupInvitedEvent.Subscribe(bot.groupInvitedEvent)

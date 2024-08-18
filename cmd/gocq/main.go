@@ -306,7 +306,6 @@ func newClient(appInfo *auth.AppInfo) *client.QQClient {
 		}
 		signUrls[i] = u.String()
 	}
-	log.Warnf("signUrls: %#v", signUrls)
 	c := client.NewClient(0, appInfo, signUrls...)
 	// TODO 服务器更新通知
 	// c.OnServerUpdated(func(bot *client.QQClient, e *client.ServerUpdatedEvent) bool {

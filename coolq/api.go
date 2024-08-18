@@ -400,6 +400,7 @@ func (bot *CQBot) CQSendMessage(groupID, userID int64, m gjson.Result, messageTy
 	return global.MSG{}
 }
 
+// TODO 发送合并转发消息
 // CQSendForwardMessage 发送合并转发消息
 //
 // @route11(send_forward_msg)
@@ -856,24 +857,23 @@ func (bot *CQBot) CQSetGroupLeave(groupID int64) global.MSG {
 //	return Failed(100, "GROUP_NOT_FOUND", "群聊不存在")
 //}
 
-// TODO 计划实现的api 处理加好友请求
 // CQProcessFriendRequest 处理加好友请求
 //
 // https://git.io/Jtz11
 // @route(set_friend_add_request)
 // @default(approve=true)
-//func (bot *CQBot) CQProcessFriendRequest(flag string, approve bool) global.MSG {
-//	req, ok := bot.friendReqCache.Load(flag)
-//	if !ok {
-//		return Failed(100, "FLAG_NOT_FOUND", "FLAG不存在")
-//	}
-//	if approve {
-//		req.Accept()
-//	} else {
-//		req.Reject()
-//	}
-//	return OK(nil)
-//}
+func (bot *CQBot) CQProcessFriendRequest(flag string, approve bool) global.MSG {
+	req, ok := bot.friendReqCache.Load(flag)
+	if !ok {
+		return Failed(100, "FLAG_NOT_FOUND", "FLAG不存在")
+	}
+	if approve {
+		_ = bot.Client.SetFriendRequest(true, req.SourceUid)
+	} else {
+		_ = bot.Client.SetFriendRequest(false, req.SourceUid)
+	}
+	return OK(nil)
+}
 
 // CQProcessGroupRequest 处理加群请求／邀请
 //
@@ -895,9 +895,9 @@ func (bot *CQBot) CQProcessGroupRequest(flag, subType, reason string, approve bo
 					return Failed(100, "FLAG_HAS_BEEN_CHECKED", "消息已被处理")
 				}
 				if approve {
-					bot.Client.SetGroupRequest(true, req.Sequence, req.EventType, req.GroupUin, "")
+					_ = bot.Client.SetGroupRequest(true, req.Sequence, req.EventType, req.GroupUin, "")
 				} else {
-					bot.Client.SetGroupRequest(false, req.Sequence, req.EventType, req.GroupUin, reason)
+					_ = bot.Client.SetGroupRequest(false, req.Sequence, req.EventType, req.GroupUin, reason)
 				}
 				return OK(nil)
 			}
@@ -910,9 +910,9 @@ func (bot *CQBot) CQProcessGroupRequest(flag, subType, reason string, approve bo
 					return Failed(100, "FLAG_HAS_BEEN_CHECKED", "消息已被处理")
 				}
 				if approve {
-					bot.Client.SetGroupRequest(true, req.Sequence, req.EventType, req.GroupUin, "")
+					_ = bot.Client.SetGroupRequest(true, req.Sequence, req.EventType, req.GroupUin, "")
 				} else {
-					bot.Client.SetGroupRequest(false, req.Sequence, req.EventType, req.GroupUin, reason)
+					_ = bot.Client.SetGroupRequest(false, req.Sequence, req.EventType, req.GroupUin, reason)
 				}
 				return OK(nil)
 			}
@@ -1167,10 +1167,9 @@ func (bot *CQBot) CQHandleQuickOperation(context, operation gjson.Result) global
 	case "request":
 		reqType := context.Get("request_type").Str
 		if operation.Get("approve").Exists() {
-			// TODO 暂未支持
-			//if reqType == "friend" {
-			//	bot.CQProcessFriendRequest(context.Get("flag").String(), operation.Get("approve").Bool())
-			//}
+			if reqType == "friend" {
+				bot.CQProcessFriendRequest(context.Get("flag").String(), operation.Get("approve").Bool())
+			}
 			if reqType == "group" {
 				bot.CQProcessGroupRequest(context.Get("flag").String(), context.Get("sub_type").Str, operation.Get("reason").Str, operation.Get("approve").Bool())
 			}

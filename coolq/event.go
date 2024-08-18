@@ -303,7 +303,6 @@ func (bot *CQBot) friendNotifyEvent(c *client.QQClient, e event2.INotifyEvent) {
 	}
 }
 
-// TODO 获得新头衔
 func (bot *CQBot) memberTitleUpdatedEvent(c *client.QQClient, e *event2.MemberSpecialTitleUpdated) {
 	group := c.GetCachedGroupInfo(e.GroupUin)
 	mem := c.GetCachedMemberInfo(e.Uin, e.GroupUin)
@@ -402,17 +401,17 @@ func (bot *CQBot) memberLeaveEvent(c *client.QQClient, e *event2.GroupMemberDecr
 	bot.dispatch(bot.groupDecrease(int64(e.GroupUin), int64(member.Uin), op))
 }
 
-// TODO 实现了，但是不想写
-//func (bot *CQBot) friendRequestEvent(_ *client.QQClient, e *event2.NewFriendRequest) {
-//	log.Infof("收到来自 %v(%v) 的好友请求: %v", e., e.RequesterUin, e.Message)
-//	flag := strconv.FormatInt(e.RequestId, 10)
-//	bot.friendReqCache.Store(flag, e)
-//	bot.dispatchEvent("request/friend", global.MSG{
-//		"user_id": e.RequesterUin,
-//		"comment": e.Message,
-//		"flag":    flag,
-//	})
-//}
+func (bot *CQBot) friendRequestEvent(_ *client.QQClient, e *event2.NewFriendRequest) {
+	log.Infof("收到来自 %v(%v) 的好友请求: %v", e.Source, e.SourceUin, e.Msg)
+	// 就用uin当flag吧
+	flag := strconv.FormatInt(int64(e.SourceUin), 10)
+	bot.friendReqCache.Store(flag, e)
+	bot.dispatchEvent("request/friend", global.MSG{
+		"user_id": e.SourceUin,
+		"comment": e.Msg,
+		"flag":    flag,
+	})
+}
 
 //func (bot *CQBot) friendAddedEvent(_ *client.QQClient, e *client.NewFriendEvent) {
 //	log.Infof("添加了新好友: %v(%v)", e.Friend.Nickname, e.Friend.Uin)

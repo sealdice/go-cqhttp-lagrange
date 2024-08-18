@@ -97,6 +97,13 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 	case "reload_event_filter":
 		p0 := p.Get("file").String()
 		return c.bot.CQReloadEventFilter(p0)
+	case "set_friend_add_request":
+		p0 := p.Get("flag").String()
+		p1 := true
+		if pt := p.Get("approve"); pt.Exists() {
+			p1 = pt.Bool()
+		}
+		return c.bot.CQProcessFriendRequest(p0, p1)
 	case "set_group_add_request":
 		p0 := p.Get("flag").String()
 		p1 := p.Get("[sub_type,type].0").String()
