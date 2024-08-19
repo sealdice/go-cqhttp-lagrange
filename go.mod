@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/FloatTech/sqlite v1.6.3
-	github.com/LagrangeDev/LagrangeGo v0.0.0-20240818095602-b742f680598c
+	github.com/LagrangeDev/LagrangeGo v0.0.0-20240819212844-2dda86271a2c
 	github.com/Microsoft/go-winio v0.6.2-0.20230724192519-b29bbd58a65a
 	github.com/RomiChan/syncx v0.0.0-20240418144900-b7402ffdebc7
 	github.com/RomiChan/websocket v1.4.3-0.20220227141055-9b2c6168c9c5
@@ -33,7 +33,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fumiama/gofastTEA v0.0.10 // indirect
 	github.com/fumiama/imgsz v0.0.4 // indirect
-	github.com/fumiama/terasu v0.0.0-20240507144117-547a591149c0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jonboulle/clockwork v0.3.0 // indirect

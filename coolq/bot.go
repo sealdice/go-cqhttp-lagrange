@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/LagrangeDev/LagrangeGo/client/sign"
+
 	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 
 	"github.com/Mrs4s/go-cqhttp/internal/mime"
@@ -329,6 +331,10 @@ func (bot *CQBot) SendGroupMessage(groupID int64, m *message.SendingMessage) (in
 	bot.checkMedia(newElem, groupID)
 	ret, err := bot.Client.SendGroupMessage(uint32(groupID), m.Elements)
 	if err != nil || ret == nil {
+		if errors.Is(err, sign.VersionMismatchError) {
+			log.Warnf("群 %v 发送消息失败: 签名与当前协议版本不对应.", groupID)
+			return -1, err
+		}
 		log.Warnf("群 %v 发送消息失败: 账号可能被风控.", groupID)
 		return -1, errors.New("send group message failed: blocked by server")
 	}
@@ -379,8 +385,8 @@ func (bot *CQBot) SendPrivateMessage(target int64, groupID int64, m *message.Sen
 
 	//session, ok := bot.tempSessionCache.Load(target)
 	var id int32 = -1
-	ret, err := bot.Client.SendPrivateMessage(uint32(groupID), m.Elements)
-	if err != nil || ret == nil {
+	ret, _ := bot.Client.SendPrivateMessage(uint32(groupID), m.Elements)
+	if ret != nil {
 		id = bot.InsertPrivateMessage(ret, source)
 	}
 	//switch {

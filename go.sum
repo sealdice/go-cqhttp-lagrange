@@ -2,8 +2,8 @@ github.com/FloatTech/sqlite v1.6.3 h1:MQkqBNlkPuCoKQQgoNLuTL/2Ci3tBTFAnVYBdD0Wy4
 github.com/FloatTech/sqlite v1.6.3/go.mod h1:zFbHzRfB+CJ+VidfjuVbrcin3DAz283F7hF1hIeHzpY=
 github.com/FloatTech/ttl v0.0.0-20230307105452-d6f7b2b647d1 h1:g4pTnDJUW4VbJ9NvoRfUvdjDrHz/6QhfN/LoIIpICbo=
 github.com/FloatTech/ttl v0.0.0-20230307105452-d6f7b2b647d1/go.mod h1:fHZFWGquNXuHttu9dUYoKuNbm3dzLETnIOnm1muSfDs=
-github.com/LagrangeDev/LagrangeGo v0.0.0-20240818095602-b742f680598c h1:gAXCufjjgk46nmFeK8LKdxVfofSXQL6V/RiTRt6Njt0=
-github.com/LagrangeDev/LagrangeGo v0.0.0-20240818095602-b742f680598c/go.mod h1:I3O+WRwggAvE/ndsyF4u3aau52KUnt5U8R9gLabHqws=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240819212844-2dda86271a2c h1:80qtiWy/eGAv2ritpHZyIDiOTH8ueDrpvGDBlAct6Ws=
+github.com/LagrangeDev/LagrangeGo v0.0.0-20240819212844-2dda86271a2c/go.mod h1:qK/l75YuMYdJWfPcxPhfjybJdXD4kzMFvcbKlvdAoa0=
 github.com/Microsoft/go-winio v0.6.2-0.20230724192519-b29bbd58a65a h1:aU1703IHxupjzipvhu16qYKLMR03e+8WuNR+JMsKfGU=
 github.com/Microsoft/go-winio v0.6.2-0.20230724192519-b29bbd58a65a/go.mod h1:OZqLNXdYJHmx7aqq/T6wAdFEdoGm5nmIfC4kU7M8P8o=
 github.com/RomiChan/protobuf v0.1.1-0.20230204044148-2ed269a2e54d h1:/Xuj3fIiMY2ls1TwvPKmaqQrtJsPY+c9s+0lOScVHd8=
@@ -23,8 +23,6 @@ github.com/fumiama/gofastTEA v0.0.10 h1:JJJ+brWD4kie+mmK2TkspDXKzqq0IjXm89aGYfoG
 github.com/fumiama/gofastTEA v0.0.10/go.mod h1:RIdbYZyB4MbH6ZBlPymRaXn3cD6SedlCu5W/HHfMPBk=
 github.com/fumiama/imgsz v0.0.4 h1:Lsasu2hdSSFS+vnD+nvR1UkiRMK7hcpyYCC0FzgSMFI=
 github.com/fumiama/imgsz v0.0.4/go.mod h1:bISOQVTlw9sRytPwe8ir7tAaEmyz9hSNj9n8mXMBG0E=
-github.com/fumiama/terasu v0.0.0-20240507144117-547a591149c0 h1:So/3Bg/m2ZcUvqCzzEjjkjHBjcvnV3AN5tCxwsdMwYU=
-github.com/fumiama/terasu v0.0.0-20240507144117-547a591149c0/go.mod h1:UVx8YP1jKKL1Cj+uy+OnQRM2Ih6U36Mqy9GSf7jabsI=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/golang/snappy v0.0.1/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
