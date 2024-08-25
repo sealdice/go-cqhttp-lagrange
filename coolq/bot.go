@@ -329,7 +329,7 @@ func (bot *CQBot) SendGroupMessage(groupID int64, m *message.SendingMessage) (in
 	}
 	m.Elements = newElem
 	bot.checkMedia(newElem, groupID)
-	ret, err := bot.Client.SendGroupMessage(uint32(groupID), m.Elements)
+	ret, err := bot.Client.SendGroupMessage(uint32(groupID), m.Elements, false)
 	if err != nil || ret == nil {
 		if errors.Is(err, sign.VersionMismatchError) {
 			log.Warnf("群 %v 发送消息失败: 签名与当前协议版本不对应.", groupID)
@@ -385,7 +385,7 @@ func (bot *CQBot) SendPrivateMessage(target int64, groupID int64, m *message.Sen
 
 	//session, ok := bot.tempSessionCache.Load(target)
 	var id int32 = -1
-	ret, _ := bot.Client.SendPrivateMessage(uint32(groupID), m.Elements)
+	ret, _ := bot.Client.SendPrivateMessage(uint32(target), m.Elements, false)
 	if ret != nil {
 		id = bot.InsertPrivateMessage(ret, source)
 	}
