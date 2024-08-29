@@ -1,6 +1,7 @@
 package coolq
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"path"
@@ -568,20 +569,20 @@ func (bot *CQBot) checkMedia(e []message.IMessageElement, sourceID int64) {
 					continue
 				}
 			}
-			// TODO 短视频
-			//case *message.ShortVideoElement:
-			//	data := binary.NewWriterF(func(w *binary.Writer) {
-			//		w.Write(i.Md5)
-			//		w.Write(i.ThumbMd5)
-			//		w.WriteUInt32(uint32(i.Size))
-			//		w.WriteUInt32(uint32(i.ThumbSize))
-			//		w.WriteString(i.Name)
-			//		w.Write(i.Uuid)
-			//	})
-			//	filename := hex.EncodeToString(i.Md5) + ".video"
-			//	cache.Video.Insert(i.Md5, data)
-			//	i.Name = filename
-			//	i.Url = bot.Client.GetShortVideoUrl(i.Uuid, i.Md5)
+		case *message.ShortVideoElement:
+			data := binary.NewWriterF(func(w *binary.Builder) {
+				w.Write(i.Md5)
+				w.Write(i.ThumbMd5)
+				w.WriteU32(i.Size)
+				w.WriteU32(i.ThumbSize)
+				w.WritePacketString(i.Name, "u32", true)
+				w.Write(i.Uuid)
+			})
+			filename := hex.EncodeToString(i.Md5) + ".video"
+			cache.Video.Insert(i.Md5, data)
+			i.Name = filename
+			// TODO 获取短视频链接
+			//i.Url = bot.Client.GetShortVideoUrl(i.Uuid, i.Md5)
 		}
 	}
 }
