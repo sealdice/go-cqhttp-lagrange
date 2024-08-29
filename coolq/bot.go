@@ -21,7 +21,7 @@ import (
 
 	"github.com/LagrangeDev/LagrangeGo/client/entity"
 	event2 "github.com/LagrangeDev/LagrangeGo/client/event"
-	"github.com/Mrs4s/go-cqhttp/utils"
+	"github.com/LagrangeDev/LagrangeGo/utils"
 
 	"github.com/LagrangeDev/LagrangeGo/client"
 	"github.com/LagrangeDev/LagrangeGo/message"
@@ -155,22 +155,7 @@ func (w *worker) wait() {
 
 // uploadLocalVoice 上传语音
 func (bot *CQBot) uploadLocalVoice(target message.Source, voice *message.VoiceElement) (message.IMessageElement, error) {
-	switch target.SourceType {
-	case message.SourceGroup:
-		i, err := bot.Client.RecordUploadGroup(uint32(target.PrimaryID), voice)
-		if err != nil {
-			return nil, err
-		}
-		return i, nil
-	case message.SourcePrivate:
-		i, err := bot.Client.RecordUploadPrivate(bot.Client.GetUid(uint32(target.PrimaryID)), voice)
-		if err != nil {
-			return nil, err
-		}
-		return i, nil
-	default:
-		return nil, errors.New("unknown target source type")
-	}
+	return bot.Client.UploadRecord(target, voice)
 }
 
 // uploadLocalImage 上传本地图片
@@ -199,42 +184,30 @@ func (bot *CQBot) uploadLocalImage(target message.Source, img *msg.LocalImage) (
 		}
 		img.Stream = bytes.NewReader(stream.Bytes())
 	}
-	switch target.SourceType {
-	case message.SourceGroup:
-		i, err := bot.Client.ImageUploadGroup(uint32(target.PrimaryID), message.NewStreamImage(img.Stream))
-		if err != nil {
-			return nil, errors.Wrap(err, "upload group error")
-		}
-		return i, nil
-	case message.SourcePrivate:
-		i, err := bot.Client.ImageUploadPrivate(bot.Client.GetUid(uint32(target.PrimaryID)), message.NewStreamImage(img.Stream))
-		if err != nil {
-			return nil, errors.Wrap(err, "upload group error")
-		}
-		return i, nil
-	default:
-		return nil, errors.New("unknown target source type")
-	}
+	return bot.Client.UploadImage(target, message.NewStreamImage(img.Stream))
 }
 
 // TODO 短视频上传
-//// uploadLocalVideo 上传本地短视频至群聊
-//func (bot *CQBot) uploadLocalVideo(target message.Source, v *msg.LocalVideo) (*message.ShortVideoElement, error) {
-//	video, err := os.Open(v.File)
-//	if err != nil {
-//		return nil, err
-//	}
-//	defer func() { _ = video.Close() }()
-//	return bot.Client.UploadShortVideo(target, video, v.Thumb)
-//}
+// uploadLocalVideo 上传本地短视频至群聊
+func (bot *CQBot) uploadLocalVideo(target message.Source, v *msg.LocalVideo) (*message.ShortVideoElement, error) {
+	video, err := os.Open(v.File)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = video.Close() }()
+	return bot.Client.UploadShortVideo(target, message.NewSteramVideo(video, v.Thumb))
+}
 
 func removeLocalElement(elements []message.IMessageElement) []message.IMessageElement {
 	var j int
 	for i, e := range elements {
-		switch e.(type) {
+		switch elem := e.(type) {
 		case *msg.LocalImage, *msg.LocalVideo:
 		// todo 这里先不要删，语音消息暂时没有本地表示
-		// case *message.VoiceElement: // 未上传的语音消息， 也删除
+		case *message.VoiceElement: // 未上传的语音消息， 也删除
+			if elem.MsgInfo != nil {
+				continue
+			}
 		case nil:
 		default:
 			if j < i {
@@ -279,16 +252,16 @@ func (bot *CQBot) uploadMedia(target message.Source, elements []message.IMessage
 					*p = m
 				}
 			})
-			// TODO 短视频上传
-			//case *msg.LocalVideo:
-			//	w.do(func() {
-			//		m, err := bot.uploadLocalVideo(target, e)
-			//		if err != nil {
-			//			log.Warnf(uploadFailedTemplate, source, target.PrimaryID, "视频", err)
-			//		} else {
-			//			*p = m
-			//		}
-			//	})
+		// TODO 短视频上传
+		case *msg.LocalVideo:
+			w.do(func() {
+				m, err := bot.uploadLocalVideo(target, e)
+				if err != nil {
+					log.Warnf(uploadFailedTemplate, source, target.PrimaryID, "视频", err)
+				} else {
+					*p = m
+				}
+			})
 		}
 	}
 	w.wait()

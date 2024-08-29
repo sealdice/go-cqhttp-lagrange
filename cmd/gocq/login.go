@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/LagrangeDev/LagrangeGo/client/packets/wtlogin/qrcodeState"
+	"github.com/LagrangeDev/LagrangeGo/utils"
 
-	"github.com/Mrs4s/go-cqhttp/utils/ternary"
+	"github.com/LagrangeDev/LagrangeGo/client/packets/wtlogin/qrcodeState"
 
 	"github.com/LagrangeDev/LagrangeGo/client/auth"
 
@@ -73,7 +73,7 @@ func printQRCode(imgData []byte) {
 	}
 
 	bound := img.Bounds().Max.X
-	buf := make([]byte, 0, (bound+1)*(bound/2+ternary.BV(bound%2 == 0, 0, 1)))
+	buf := make([]byte, 0, (bound+1)*(bound/2+utils.Ternary(bound%2 == 0, 0, 1)))
 
 	padding := 0
 	lastColor := img.At(padding, padding).(color.Gray).Y
@@ -86,7 +86,7 @@ func printQRCode(imgData []byte) {
 	for y := padding; y < bound-padding; y += 2 {
 		for x := padding; x < bound-padding; x++ {
 			isUpWhite := img.At(x, y).(color.Gray).Y == 255
-			isDownWhite := ternary.BV(y < bound-padding, img.At(x, y+1).(color.Gray).Y == 255, false)
+			isDownWhite := utils.Ternary(y < bound-padding, img.At(x, y+1).(color.Gray).Y == 255, false)
 
 			if !isUpWhite && !isDownWhite {
 				buf = append(buf, bb...)

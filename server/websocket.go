@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/Mrs4s/go-cqhttp/utils"
 	"net"
 	"net/http"
 	"net/url"
@@ -14,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/LagrangeDev/LagrangeGo/utils"
 
 	"github.com/RomiChan/websocket"
 	log "github.com/sirupsen/logrus"

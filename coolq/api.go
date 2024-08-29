@@ -20,6 +20,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 
+	"github.com/LagrangeDev/LagrangeGo/utils"
 	"github.com/Mrs4s/go-cqhttp/db"
 	"github.com/Mrs4s/go-cqhttp/global"
 	"github.com/Mrs4s/go-cqhttp/internal/base"
@@ -28,7 +29,6 @@ import (
 	"github.com/Mrs4s/go-cqhttp/internal/param"
 	"github.com/Mrs4s/go-cqhttp/modules/filter"
 	"github.com/Mrs4s/go-cqhttp/pkg/onebot"
-	"github.com/Mrs4s/go-cqhttp/utils"
 )
 
 // CQGetLoginInfo 获取登录号信息

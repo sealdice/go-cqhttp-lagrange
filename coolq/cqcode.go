@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"path"
@@ -14,7 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Mrs4s/go-cqhttp/utils"
+	"github.com/LagrangeDev/LagrangeGo/utils"
+	"github.com/LagrangeDev/LagrangeGo/utils/crypto"
 
 	"github.com/LagrangeDev/LagrangeGo/message"
 	"github.com/LagrangeDev/LagrangeGo/utils/binary"
@@ -822,47 +824,47 @@ func (bot *CQBot) ConvertElement(spec *onebot.Spec, elem msg.Element, sourceType
 	//		return nil, errors.New("send cardimage faild")
 	//	}
 	//	return bot.makeShowPic(img, source, brief, icon, minWidth, minHeight, maxWidth, maxHeight, sourceType == message.SourceGroup)
-	//case "video":
-	//	file, err := bot.makeImageOrVideoElem(elem, true, sourceType)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	v, ok := file.(*msg.LocalVideo)
-	//	if !ok {
-	//		return file, nil
-	//	}
-	//	if v.File == "" {
-	//		return v, nil
-	//	}
-	//	var data []byte
-	//	if cover := elem.Get("cover"); cover != "" {
-	//		data, _ = global.FindFile(cover, elem.Get("cache"), global.ImagePath)
-	//	} else {
-	//		err = global.ExtractCover(v.File, v.File+".jpg")
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//		data, _ = os.ReadFile(v.File + ".jpg")
-	//	}
-	//	v.Thumb = bytes.NewReader(data)
-	//	video, _ := os.Open(v.File)
-	//	defer video.Close()
-	//	_, _ = video.Seek(4, io.SeekStart)
-	//	header := make([]byte, 4)
-	//	_, _ = video.Read(header)
-	//	if !bytes.Equal(header, []byte{0x66, 0x74, 0x79, 0x70}) { // check file header ftyp
-	//		_, _ = video.Seek(0, io.SeekStart)
-	//		hash, _ := utils.ComputeMd5AndLength(video)
-	//		cacheFile := path.Join(global.CachePath, hex.EncodeToString(hash)+".mp4")
-	//		if !(elem.Get("cache") == "" || elem.Get("cache") == "1") || !global.PathExists(cacheFile) {
-	//			err = global.EncodeMP4(v.File, cacheFile)
-	//			if err != nil {
-	//				return nil, err
-	//			}
-	//		}
-	//		v.File = cacheFile
-	//	}
-	//	return v, nil
+	case "video":
+		file, err := bot.makeImageOrVideoElem(elem, true, sourceType)
+		if err != nil {
+			return nil, err
+		}
+		v, ok := file.(*msg.LocalVideo)
+		if !ok {
+			return file, nil
+		}
+		if v.File == "" {
+			return v, nil
+		}
+		var data []byte
+		if cover := elem.Get("cover"); cover != "" {
+			data, _ = global.FindFile(cover, elem.Get("cache"), global.ImagePath)
+		} else {
+			err = global.ExtractCover(v.File, v.File+".jpg")
+			if err != nil {
+				return nil, err
+			}
+			data, _ = os.ReadFile(v.File + ".jpg")
+		}
+		v.Thumb = bytes.NewReader(data)
+		video, _ := os.Open(v.File)
+		defer video.Close()
+		_, _ = video.Seek(4, io.SeekStart)
+		header := make([]byte, 4)
+		_, _ = video.Read(header)
+		if !bytes.Equal(header, []byte{0x66, 0x74, 0x79, 0x70}) { // check file header ftyp
+			_, _ = video.Seek(0, io.SeekStart)
+			hash, _ := crypto.ComputeMd5AndLength(video)
+			cacheFile := path.Join(global.CachePath, hex.EncodeToString(hash)+".mp4")
+			if !(elem.Get("cache") == "" || elem.Get("cache") == "1") || !global.PathExists(cacheFile) {
+				err = global.EncodeMP4(v.File, cacheFile)
+				if err != nil {
+					return nil, err
+				}
+			}
+			v.File = cacheFile
+		}
+		return v, nil
 	//case "file":
 	//	path := elem.Get("path")
 	//	name := elem.Get("name")
@@ -1037,8 +1039,8 @@ func (bot *CQBot) readVideoCache(b []byte) message.IMessageElement {
 	return &message.ShortVideoElement{ // todo 检查缓存是否有效
 		Md5:       r.ReadBytes(16),
 		ThumbMd5:  r.ReadBytes(16),
-		Size:      r.ReadI32(),
-		ThumbSize: r.ReadI32(),
+		Size:      r.ReadU32(),
+		ThumbSize: r.ReadU32(),
 		Name:      r.ReadStringWithLength("u32", true),
 		Uuid:      r.ReadBytes(r.Len()),
 	}

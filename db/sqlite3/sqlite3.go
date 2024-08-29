@@ -10,7 +10,7 @@ import (
 
 	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 
-	"github.com/Mrs4s/go-cqhttp/utils"
+	"github.com/LagrangeDev/LagrangeGo/utils"
 
 	sql "github.com/FloatTech/sqlite"
 	"github.com/pkg/errors"

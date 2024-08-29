@@ -5,7 +5,7 @@ import (
 
 	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 
-	"github.com/Mrs4s/go-cqhttp/utils"
+	"github.com/LagrangeDev/LagrangeGo/utils"
 
 	"github.com/pkg/errors"
 	"github.com/syndtr/goleveldb/leveldb"

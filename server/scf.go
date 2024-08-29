@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/Mrs4s/go-cqhttp/utils"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"runtime/debug"
 	"strings"
+
+	"github.com/LagrangeDev/LagrangeGo/utils"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"

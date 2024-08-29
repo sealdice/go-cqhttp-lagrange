@@ -19,7 +19,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Mrs4s/go-cqhttp/utils"
+	"github.com/LagrangeDev/LagrangeGo/utils"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"

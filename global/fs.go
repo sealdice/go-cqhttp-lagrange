@@ -5,13 +5,14 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
-	"github.com/Mrs4s/go-cqhttp/utils"
 	"net/netip"
 	"net/url"
 	"os"
 	"path"
 	"runtime"
 	"strings"
+
+	"github.com/LagrangeDev/LagrangeGo/utils"
 
 	b14 "github.com/fumiama/go-base16384"
 	"github.com/segmentio/asm/base64"
