@@ -123,6 +123,7 @@ func toStringMessage(m []message.IMessageElement, source message.Source) string 
 	return sb.String()
 }
 
+//nolint:unused
 func fU64(v uint64) string {
 	return strconv.FormatUint(v, 10)
 }

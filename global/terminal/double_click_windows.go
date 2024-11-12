@@ -52,7 +52,7 @@ func NoMoreDoubleClick() error {
 		return errors.Errorf("写入go-cqhttp.bat失败: %v", err)
 	}
 	f.Close()
-	boxW(0, "安全启动脚本已生成，请双击go-cqhttp.bat启动", "提示", 0x00000040|0x00000000)
+	boxW(0, "安全启动脚本已生成，请双击go-cqhttp.bat启动", "提示", 0x00000040)
 	return nil
 }
 

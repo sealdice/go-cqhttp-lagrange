@@ -331,6 +331,7 @@ func (bot *CQBot) SendPrivateMessage(target int64, _ int64, m *message.SendingMe
 	}
 	m.Elements = bot.uploadMedia(source, m.Elements)
 	for _, e := range m.Elements {
+		//nolint:gocritic
 		switch i := e.(type) {
 		case *msg.Poke:
 			_ = bot.Client.FriendPoke(uint32(i.Target))

@@ -258,8 +258,7 @@ func (bot *CQBot) CQGetGroupFilesByFolderID(groupID int64, folderID string) glob
 //
 // https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%96%87%E4%BB%B6%E8%B5%84%E6%BA%90%E9%93%BE%E6%8E%A5
 // @route(get_group_file_url)
-// @rename(bus_id->"[busid\x2Cbus_id].0")
-func (bot *CQBot) CQGetGroupFileURL(groupID int64, fileID string, busID int32) global.MSG {
+func (bot *CQBot) CQGetGroupFileURL(groupID int64, fileID string) global.MSG {
 	url, err := bot.Client.GetGroupFileURL(uint32(groupID), fileID)
 	if err != nil {
 		return Failed(100, "FILE_SYSTEM_API_ERROR")
@@ -326,8 +325,7 @@ func (bot *CQBot) CQGroupFileDeleteFolder(groupID int64, id string) global.MSG {
 // CQGroupFileDeleteFile 拓展API-删除群文件
 //
 // @route(delete_group_file)
-// @rename(id->file_id, bus_id->"[busid\x2Cbus_id].0")
-func (bot *CQBot) CQGroupFileDeleteFile(groupID int64, id string, busID int32) global.MSG {
+func (bot *CQBot) CQGroupFileDeleteFile(groupID int64, id string) global.MSG {
 	if err := bot.Client.DeleteGroupFile(uint32(groupID), id); err != nil {
 		log.Warnf("删除群 %v 文件 %v 时出现错误: %v", groupID, id, err)
 		return Failed(200, "FILE_SYSTEM_API_ERROR", err.Error())

@@ -108,7 +108,7 @@ func (bot *CQBot) privateMessageEvent(_ *client.QQClient, m *message.PrivateMess
 	bot.dispatchEvent(typ, fm)
 }
 
-func (bot *CQBot) groupMessageEvent(c *client.QQClient, m *message.GroupMessage) {
+func (bot *CQBot) groupMessageEvent(_ *client.QQClient, m *message.GroupMessage) {
 	source := message.Source{
 		SourceType: message.SourceGroup,
 		PrimaryID:  int64(m.GroupUin),
@@ -243,6 +243,8 @@ func (bot *CQBot) groupRecallEvent(c *client.QQClient, e *event2.GroupRecall) {
 func (bot *CQBot) groupNotifyEvent(c *client.QQClient, e event2.INotifyEvent) {
 	group := c.GetCachedGroupInfo(e.From())
 	switch notify := e.(type) {
+	// TODO more event
+	//nolint:gocritic
 	case *event2.GroupPokeEvent:
 		sender := c.GetCachedMemberInfo(notify.Sender, e.From())
 		receiver := c.GetCachedMemberInfo(notify.Receiver, e.From())
@@ -566,6 +568,10 @@ func (bot *CQBot) checkMedia(e []message.IMessageElement, source message.Source)
 		case *message.ShortVideoElement:
 			data := binary.NewWriterF(func(w *binary.Builder) {
 				_, err := w.Write(i.Md5)
+				if err != nil {
+					log.Warnf("计算视频md5时出现错误: %v", err)
+					return
+				}
 				_, err = w.Write(i.Sha1)
 				if err != nil {
 					log.Warnf("计算视频sha1时出现错误: %v", err)
