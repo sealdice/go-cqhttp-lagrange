@@ -721,8 +721,8 @@ func (bot *CQBot) CQDelGroupMemo(groupID int64, fid string) global.MSG {
 //
 // https://git.io/Jtz1V
 // @route(set_group_kick)
-// @rename(msg->message, block->reject_add_request)
-func (bot *CQBot) CQSetGroupKick(groupID int64, userID int64, msg string, block bool) global.MSG {
+// @rename(block->reject_add_request)
+func (bot *CQBot) CQSetGroupKick(groupID int64, userID int64, block bool) global.MSG {
 	if g := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
 		m := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID))
 		if m == nil {
@@ -1098,7 +1098,7 @@ func (bot *CQBot) CQHandleQuickOperation(context, operation gjson.Result) global
 				bot.CQDeleteMessage(int32(context.Get("message_id").Int()))
 			}
 			if !isAnonymous && operation.Get("kick").Bool() {
-				bot.CQSetGroupKick(context.Get("group_id").Int(), context.Get("user_id").Int(), "", operation.Get("reject_add_request").Bool())
+				bot.CQSetGroupKick(context.Get("group_id").Int(), context.Get("user_id").Int(), operation.Get("reject_add_request").Bool())
 			}
 			if operation.Get("ban").Bool() {
 				var duration uint32 = 30 * 60

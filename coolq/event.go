@@ -242,9 +242,9 @@ func (bot *CQBot) groupRecallEvent(c *client.QQClient, e *event2.GroupRecall) {
 
 func (bot *CQBot) groupNotifyEvent(c *client.QQClient, e event2.INotifyEvent) {
 	group := c.GetCachedGroupInfo(e.From())
-	switch notify := e.(type) {
 	// TODO more event
 	//nolint:gocritic
+	switch notify := e.(type) {
 	case *event2.GroupPokeEvent:
 		sender := c.GetCachedMemberInfo(notify.Sender, e.From())
 		receiver := c.GetCachedMemberInfo(notify.Receiver, e.From())
