@@ -211,7 +211,6 @@ func LoginInteract() {
 	app := auth.AppList["linux"]["3.2.10-25765"]
 	log.Infof("使用协议: %s %s", app.OS, app.CurrentVersion)
 	cli = newClient(app)
-	cli.UseVersion(app)
 	cli.UseDevice(device)
 	isQRCodeLogin := (base.Account.Uin == 0 || len(base.Account.Password) == 0) && !base.Account.Encrypt
 	isTokenLogin := false

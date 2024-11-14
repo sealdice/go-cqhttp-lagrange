@@ -534,21 +534,16 @@ func (bot *CQBot) checkMedia(e []message.IMessageElement, source message.Source)
 		switch i := elem.(type) {
 		case *message.ImageElement:
 			// 闪照已经4了(私聊还没)
-			//if i.Flash && sourceID != 0 {
-			//	u, err := bot.Client.GetGroupImageDownloadUrl(i.FileId, sourceID, i.Md5)
+			//if i.Flash && source.PrimaryID != 0 {
+			//	u, err := bot.Client.GetGroupImageURL(uint32(source.PrimaryID), i.MsgInfo.MsgInfoBody[0].Index)
 			//	if err != nil {
 			//		log.Warnf("获取闪照地址时出现错误: %v", err)
 			//	} else {
-			//		i.Url = u
+			//		i.URL = u
 			//	}
 			//}
 			data := binary.NewWriterF(func(w *binary.Builder) {
-				_, err := w.Write(i.Md5)
-				if err != nil {
-					log.Warnf("计算图片md5时出现错误: %v", err)
-					return
-				}
-
+				_, _ = w.Write(i.Md5)
 				w.WritePacketString(i.FileUUID, "u32", true)
 				w.WritePacketString(i.ImageID, "u32", true)
 			})
@@ -567,18 +562,10 @@ func (bot *CQBot) checkMedia(e []message.IMessageElement, source message.Source)
 			}
 		case *message.ShortVideoElement:
 			data := binary.NewWriterF(func(w *binary.Builder) {
-				_, err := w.Write(i.Md5)
-				if err != nil {
-					log.Warnf("计算视频md5时出现错误: %v", err)
-					return
-				}
-				_, err = w.Write(i.Sha1)
-				if err != nil {
-					log.Warnf("计算视频sha1时出现错误: %v", err)
-					return
-				}
+				_, _ = w.Write(i.Md5)
+				_, _ = w.Write(i.Sha1)
 				w.WritePacketString(i.Name, "u32", true)
-				w.WritePacketBytes(i.UUID, "u32", true)
+				w.WritePacketString(i.UUID, "u32", true)
 			})
 			filename := hex.EncodeToString(i.Md5) + ".video"
 			cache.Video.Insert(i.Md5, data)

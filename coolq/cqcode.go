@@ -1020,13 +1020,9 @@ func (bot *CQBot) readVideoCache(b []byte) message.IMessageElement {
 	r := binary.NewReader(b)
 	return &message.ShortVideoElement{ // todo 检查缓存是否有效
 		Md5:  r.ReadBytes(16),
-		Size: r.ReadU32(),
-		Thumb: &message.VideoThumb{
-			Md5:  r.ReadBytes(16),
-			Size: r.ReadU32(),
-		},
+		Sha1: r.ReadBytes(20),
 		Name: r.ReadStringWithLength("u32", true),
-		UUID: r.ReadBytes(r.Len()),
+		UUID: r.ReadStringWithLength("u32", true),
 	}
 }
 
