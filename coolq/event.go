@@ -559,8 +559,9 @@ func (bot *CQBot) checkMedia(e []message.IMessageElement, source message.Source)
 			}
 		case *message.ShortVideoElement:
 			data := binary.NewWriterF(func(w *binary.Builder) {
-				_, _ = w.Write(i.Md5)
-				_, _ = w.Write(i.Sha1)
+				w.WriteBool(source.SourceType == message.SourceGroup)
+				w.WriteBytes(i.Md5)
+				w.WriteBytes(i.Sha1)
 				w.WritePacketString(i.Name, "u32", true)
 				w.WritePacketString(i.UUID, "u32", true)
 			})

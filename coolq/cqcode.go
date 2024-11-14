@@ -1018,12 +1018,15 @@ func (bot *CQBot) readImageCache(b []byte, sourceType message.SourceType) (messa
 
 func (bot *CQBot) readVideoCache(b []byte) message.IMessageElement {
 	r := binary.NewReader(b)
-	return &message.ShortVideoElement{ // todo 检查缓存是否有效
+	isGroup := r.ReadU8() == '1'
+	video := &message.ShortVideoElement{ // todo 检查缓存是否有效
 		Md5:  r.ReadBytes(16),
 		Sha1: r.ReadBytes(20),
 		Name: r.ReadStringWithLength("u32", true),
 		UUID: r.ReadStringWithLength("u32", true),
 	}
+	video.URL, _ = bot.Client.GetVideoURL(isGroup, video.UUID)
+	return video
 }
 
 //// makeShowPic 一种xml 方式发送的群消息图片
