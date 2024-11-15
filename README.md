@@ -8,8 +8,7 @@
 
 # go-cqhttp
 
-_✨ 基于 [Lagrange.Core](https://github.com/KonataDev/Lagrange.Core) /
-[lagrange-python](https://github.com/LagrangeDev/lagrange-python) / [MiraiGo](https://github.com/Mrs4s/MiraiGo) 的 [OneBot](https://github.com/howmanybots/onebot/blob/master/README.md) Golang 原生实现 ✨_  
+_✨ 基于 [Lagrange.Core](https://github.com/KonataDev/Lagrange.Core) 以及 [LagrangeGo](https://github.com/LagrangeDev/LagrangeGo) 的 [OneBot](https://github.com/howmanybots/onebot/blob/master/README.md) Golang 原生实现 ✨_  
 
 
 </div>
