@@ -64,7 +64,7 @@ func Parse() {
 	d := flag.Bool("D", false, "debug mode")
 	flag.BoolVar(&FastStart, "faststart", false, "skip waiting 5 seconds")
 	flag.Parse()
-
+	FastStart = true
 	if *d {
 		Debug = true
 	}
