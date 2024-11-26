@@ -78,6 +78,9 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 		}
 	}
 	switch action {
+	case ".ocr_image", "ocr_image":
+		p0 := p.Get("image").String()
+		return c.bot.CQOcrImage(p0)
 	case "_del_group_notice":
 		p0 := p.Get("group_id").Int()
 		p1 := p.Get("notice_id").String()
@@ -122,6 +125,9 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 		return c.bot.CQGetForwardMessage(p0)
 	case "get_friend_list":
 		return c.bot.CQGetFriendList(spec)
+	case "get_group_at_all_remain":
+		p0 := p.Get("group_id").Int()
+		return c.bot.CQGetAtAllRemain(p0)
 	case "get_group_file_system_info":
 		p0 := p.Get("group_id").Int()
 		return c.bot.CQGetGroupFileSystemInfo(p0)
@@ -169,6 +175,9 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 	case "reload_event_filter":
 		p0 := p.Get("file").String()
 		return c.bot.CQReloadEventFilter(p0)
+	case "send_group_sign":
+		p0 := p.Get("group_id").Int()
+		return c.bot.CQSendGroupSign(p0)
 	case "set_essence_msg":
 		p0 := int32(p.Get("message_id").Int())
 		return c.bot.CQSetEssenceMessage(p0)
@@ -221,6 +230,11 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 		p0 := p.Get("group_id").Int()
 		p1 := p.Get("group_name").String()
 		return c.bot.CQSetGroupName(p0, p1)
+	case "set_group_portrait":
+		p0 := p.Get("group_id").Int()
+		p1 := p.Get("file").String()
+		p2 := p.Get("cache").String()
+		return c.bot.CQSetGroupPortrait(p0, p1, p2)
 	case "set_group_special_title":
 		p0 := p.Get("group_id").Int()
 		p1 := p.Get("user_id").Int()
