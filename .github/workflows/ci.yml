@@ -30,7 +30,7 @@ jobs:
         env:
           MY_ENV_VAR: ${{ secrets.KEY }}
         run: |
-          sed -i 's#$(SIGN_SERVER_DEFAULT)#'"${MY_ENV_VAR}"'#g' 'cmd\gocq\main.go'
+          sed -i 's#$(SIGN_SERVER_DEFAULT)#'"${MY_ENV_VAR}"'#g' 'cmd/gocq/main.go'
       - name: Setup Go environment
         uses: actions/setup-go@v5
         with:
