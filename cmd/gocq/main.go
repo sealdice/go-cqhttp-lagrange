@@ -383,10 +383,10 @@ func PasswordHashDecrypt(encryptedPasswordHash string, key []byte) ([]byte, erro
 
 func newClient(app *auth.AppInfo) *client.QQClient {
 	signUrls := make([]string, 0, len(base.SignServers))
-	defaultSignUrl := "https://lwxmagic.sealdice.com/api/sign"
+	defaultSignURL := "https://lwxmagic.sealdice.com/api/sign"
 	for _, s := range base.SignServers {
-		if strings.Contains(s.URL, defaultSignUrl) {
-			s.URL = strings.ReplaceAll(s.URL, defaultSignUrl, "$(SIGN_SERVER_DEFAULT)")
+		if strings.Contains(s.URL, defaultSignURL) {
+			s.URL = strings.ReplaceAll(s.URL, defaultSignURL, "$(SIGN_SERVER_DEFAULT)")
 		}
 		u, err := url.Parse(s.URL)
 		if err != nil || u.Hostname() == "" {
