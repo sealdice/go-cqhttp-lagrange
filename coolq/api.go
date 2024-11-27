@@ -1018,7 +1018,7 @@ func (bot *CQBot) CQGetStrangerInfo(userID int64) global.MSG {
 	return OK(global.MSG{
 		"user_id":  info.Uin,
 		"nickname": info.Nickname,
-		//"qid":      info.Qid,
+		"qid":      info.QID,
 		"sex": func() string {
 			//if info.Sex == 1 {
 			//	return "female"
@@ -1028,11 +1028,11 @@ func (bot *CQBot) CQGetStrangerInfo(userID int64) global.MSG {
 			// unknown = 0x2
 			return "unknown"
 		}(),
-		"sign": info.PersonalSign,
-		//"age":        info.Age,
-		//"level":      info.Level,
+		"sign":  info.PersonalSign,
+		"age":   info.Age,
+		"level": info.Level,
 		//"login_days": info.LoginDays,
-		//"vip_level":  info.VipLevel,
+		"vip_level": info.VipLevel,
 	})
 }
 
