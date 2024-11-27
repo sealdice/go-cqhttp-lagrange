@@ -1,6 +1,7 @@
 package coolq
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
@@ -789,16 +790,16 @@ func (bot *CQBot) CQSetGroupLeave(groupID int64) global.MSG {
 //
 // https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E7%BE%A4-%E5%85%A8%E4%BD%93%E6%88%90%E5%91%98-%E5%89%A9%E4%BD%99%E6%AC%A1%E6%95%B0
 // @route(get_group_at_all_remain)
-//func (bot *CQBot) CQGetAtAllRemain(groupID int64) global.MSG {
-//	if g := bot.Client.FindGroup(groupID); g != nil {
-//		i, err := bot.Client.GetAtAllRemain(groupID)
-//		if err != nil {
-//			return Failed(100, "GROUP_REMAIN_API_ERROR", err.Error())
-//		}
-//		return OK(i)
-//	}
-//	return Failed(100, "GROUP_NOT_FOUND", "群聊不存在")
-//}
+func (bot *CQBot) CQGetAtAllRemain(groupID int64) global.MSG {
+	if g := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
+		i, err := bot.Client.GetAtAllRemain(bot.Client.Uin, uint32(groupID))
+		if err != nil {
+			return Failed(100, "GROUP_REMAIN_API_ERROR", err.Error())
+		}
+		return OK(i)
+	}
+	return Failed(100, "GROUP_NOT_FOUND", "群聊不存在")
+}
 
 // CQProcessFriendRequest 处理加好友请求
 //
@@ -1017,7 +1018,7 @@ func (bot *CQBot) CQGetStrangerInfo(userID int64) global.MSG {
 	return OK(global.MSG{
 		"user_id":  info.Uin,
 		"nickname": info.Nickname,
-		//"qid":      info.Qid,
+		"qid":      info.QID,
 		"sex": func() string {
 			//if info.Sex == 1 {
 			//	return "female"
@@ -1027,11 +1028,11 @@ func (bot *CQBot) CQGetStrangerInfo(userID int64) global.MSG {
 			// unknown = 0x2
 			return "unknown"
 		}(),
-		"sign": info.PersonalSign,
-		//"age":        info.Age,
-		//"level":      info.Level,
+		"sign":  info.PersonalSign,
+		"age":   info.Age,
+		"level": info.Level,
 		//"login_days": info.LoginDays,
-		//"vip_level":  info.VipLevel,
+		"vip_level": info.VipLevel,
 	})
 }
 
@@ -1379,40 +1380,47 @@ func (bot *CQBot) CQCanSendRecord() global.MSG {
 // https://docs.go-cqhttp.org/api/#%E5%9B%BE%E7%89%87-ocr
 // @route(ocr_image,".ocr_image")
 // @rename(image_id->image)
-//func (bot *CQBot) CQOcrImage(imageID string) global.MSG {
-//	// TODO: fix this
-//	var elem msg.Element
-//	elem.Type = "image"
-//	elem.Data = []msg.Pair{{K: "file", V: imageID}}
-//	img, err := bot.makeImageOrVideoElem(elem, false, message.SourceGroup)
-//	if err != nil {
-//		log.Warnf("load image error: %v", err)
-//		return Failed(100, "LOAD_FILE_ERROR", err.Error())
-//	}
-//	rsp, err := bot.Client.ImageOcr(img)
-//	if err != nil {
-//		log.Warnf("ocr image error: %v", err)
-//		return Failed(100, "OCR_API_ERROR", err.Error())
-//	}
-//	return OK(rsp)
-//}
+func (bot *CQBot) CQOcrImage(imageID string) global.MSG {
+	// TODO: fix this
+	var elem msg.Element
+	elem.Type = "image"
+	elem.Data = []msg.Pair{{K: "file", V: imageID}}
+	img, err := bot.makeImageOrVideoElem(elem, false, message.SourceGroup)
+	if err != nil {
+		log.Warnf("load image error: %v", err)
+		return Failed(100, "LOAD_FILE_ERROR", err.Error())
+	}
+	image, ok := img.(*msg.LocalImage)
+	if !ok {
+		return Failed(100, "IMAGE_ERROR", "图片数据错误")
+	}
+	rsp, err := bot.Client.ImageOcr(image.URL)
+	if err != nil {
+		log.Warnf("ocr image error: %v", err)
+		return Failed(100, "OCR_API_ERROR", err.Error())
+	}
+	return OK(rsp)
+}
 
 // CQSetGroupPortrait 扩展API-设置群头像
 //
 // https://docs.go-cqhttp.org/api/#%E8%AE%BE%E7%BD%AE%E7%BE%A4%E5%A4%B4%E5%83%8F
 // @route(set_group_portrait)
-//func (bot *CQBot) CQSetGroupPortrait(groupID int64, file, cache string) global.MSG {
-//	if g := bot.Client.FindGroup(groupID); g != nil {
-//		img, err := global.FindFile(file, cache, global.ImagePath)
-//		if err != nil {
-//			log.Warnf("set group portrait error: %v", err)
-//			return Failed(100, "LOAD_FILE_ERROR", err.Error())
-//		}
-//		g.UpdateGroupHeadPortrait(img)
-//		return OK(nil)
-//	}
-//	return Failed(100, "GROUP_NOT_FOUND", "群聊不存在")
-//}
+func (bot *CQBot) CQSetGroupPortrait(groupID int64, file, cache string) global.MSG {
+	if g := bot.Client.GetCachedGroupInfo(uint32(groupID)); g != nil {
+		img, err := global.FindFile(file, cache, global.ImagePath)
+		if err != nil {
+			log.Warnf("set group portrait error: %v", err)
+			return Failed(100, "LOAD_FILE_ERROR", err.Error())
+		}
+		if bot.Client.SetGroupAvatar(g.GroupUin, bytes.NewReader(img)) == nil {
+			return OK(nil)
+		}
+		Failed(100, "PERMISSION_DENIED", "机器人权限不足")
+
+	}
+	return Failed(100, "GROUP_NOT_FOUND", "群聊不存在")
+}
 
 // CQSetGroupAnonymousBan 群组匿名用户禁言
 //
@@ -1585,10 +1593,13 @@ func (bot *CQBot) CQGetVersionInfo() global.MSG {
 //
 // https://club.vip.qq.com/onlinestatus/set
 // @route(send_group_sign)
-//func (bot *CQBot) CQSendGroupSign(groupID int64) global.MSG {
-//	bot.Client.SendGroupSign(groupID)
-//	return OK(nil)
-//}
+func (bot *CQBot) CQSendGroupSign(groupID int64) global.MSG {
+	_, err := bot.Client.SendGroupSign(uint32(groupID))
+	if err == nil {
+		return OK(nil)
+	}
+	return Failed(100, "SEND_GROUP_SIGN_ERROR", err.Error())
+}
 
 // CQSetModelShow 设置在线机型
 //

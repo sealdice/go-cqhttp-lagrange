@@ -4,6 +4,8 @@ package onebot
 
 var supportedV11 = []string{
 	".handle_quick_operation",
+	".ocr_image",
+	"ocr_image",
 	"_del_group_notice",
 	"_get_group_notice",
 	"_send_group_notice",
@@ -18,6 +20,7 @@ var supportedV11 = []string{
 	"get_essence_msg_list",
 	"get_forward_msg",
 	"get_friend_list",
+	"get_group_at_all_remain",
 	"get_group_file_system_info",
 	"get_group_file_url",
 	"get_group_files_by_folder",
@@ -38,6 +41,7 @@ var supportedV11 = []string{
 	"send_forward_msg",
 	"send_group_forward_msg",
 	"send_group_msg",
+	"send_group_sign",
 	"send_msg",
 	"send_private_forward_msg",
 	"send_private_msg",
@@ -50,6 +54,7 @@ var supportedV11 = []string{
 	"set_group_kick",
 	"set_group_leave",
 	"set_group_name",
+	"set_group_portrait",
 	"set_group_special_title",
 	"set_group_whole_ban",
 	"upload_group_file",
@@ -57,6 +62,8 @@ var supportedV11 = []string{
 }
 
 var supportedV12 = []string{
+	".ocr_image",
+	"ocr_image",
 	"_del_group_notice",
 	"_get_group_notice",
 	"_send_group_notice",
@@ -69,6 +76,7 @@ var supportedV12 = []string{
 	"get_essence_msg_list",
 	"get_forward_msg",
 	"get_friend_list",
+	"get_group_at_all_remain",
 	"get_group_file_system_info",
 	"get_group_file_url",
 	"get_group_files_by_folder",
@@ -85,6 +93,7 @@ var supportedV12 = []string{
 	"get_user_info",
 	"get_supported_actions",
 	"reload_event_filter",
+	"send_group_sign",
 	"set_essence_msg",
 	"set_friend_add_request",
 	"set_group_add_request",
@@ -94,6 +103,7 @@ var supportedV12 = []string{
 	"set_group_kick",
 	"set_group_leave",
 	"set_group_name",
+	"set_group_portrait",
 	"set_group_special_title",
 	"set_group_whole_ban",
 	"upload_group_file",
