@@ -1453,14 +1453,13 @@ func (bot *CQBot) CQGetStatus(spec *onebot.Spec) global.MSG {
 			"app_good":        true,
 			"online":          bot.Client.Online.Load(),
 			"good":            bot.Client.Online.Load(),
-			// TODO 暂时没有
-			//"stat":            bot.Client.GetStatistics(),
+			"stat":            bot.Client.GetStatistics(),
 		})
 	}
 	return OK(global.MSG{
 		"online": bot.Client.Online.Load(),
 		"good":   bot.Client.Online.Load(),
-		//"stat":   bot.Client.GetStatistics(),
+		"stat":   bot.Client.GetStatistics(),
 	})
 }
 
