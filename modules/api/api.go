@@ -93,6 +93,9 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 		p1 := p.Get("content").String()
 		p2 := p.Get("image").String()
 		return c.bot.CQSetGroupMemo(p0, p1, p2)
+	case "check_url_safely":
+		p0 := p.Get("url").String()
+		return c.bot.CQCheckURLSafely(p0)
 	case "create_group_file_folder":
 		p0 := p.Get("group_id").Int()
 		p1 := p.Get("parent_id").String()
@@ -101,6 +104,10 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 	case "delete_essence_msg":
 		p0 := int32(p.Get("message_id").Int())
 		return c.bot.CQDeleteEssenceMessage(p0)
+	case "delete_friend":
+		p0 := p.Get("[user_id,id].0").Int()
+		p1 := p.Get("block").Bool()
+		return c.bot.CQDeleteFriend(p0, p1)
 	case "delete_group_file":
 		p0 := p.Get("group_id").Int()
 		p1 := p.Get("id").String()
@@ -112,6 +119,9 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 	case "delete_msg":
 		p0 := int32(p.Get("message_id").Int())
 		return c.bot.CQDeleteMessage(p0)
+	case "delete_unidirectional_friend":
+		p0 := p.Get("user_id").Int()
+		return c.bot.CQDeleteUnidirectionalFriend(p0)
 	case "download_file":
 		p0 := p.Get("url").String()
 		p1 := p.Get("headers")
@@ -159,9 +169,15 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 		p0 := p.Get("group_id").Int()
 		p1 := p.Get("no_cache").Bool()
 		return c.bot.CQGetGroupMemberList(p0, p1)
+	case "get_group_msg_history":
+		p0 := p.Get("group_id").Int()
+		p1 := p.Get("message_seq").Int()
+		return c.bot.CQGetGroupMessageHistory(p0, p1)
 	case "get_group_root_files":
 		p0 := p.Get("group_id").Int()
 		return c.bot.CQGetGroupRootFiles(p0)
+	case "get_group_system_msg":
+		return c.bot.CQGetGroupSystemMessages()
 	case "get_image":
 		p0 := p.Get("file").String()
 		return c.bot.CQGetImage(p0)
@@ -172,6 +188,11 @@ func (c *Caller) call(action string, spec *onebot.Spec, p Getter) global.MSG {
 		return c.bot.CQGetStatus(spec)
 	case "get_supported_actions":
 		return c.bot.CQGetSupportedActions(spec)
+	case "get_unidirectional_friend_list":
+		return c.bot.CQGetUnidirectionalFriendList()
+	case "mark_msg_as_read":
+		p0 := int32(p.Get("message_id").Int())
+		return c.bot.CQMarkMessageAsRead(p0)
 	case "reload_event_filter":
 		p0 := p.Get("file").String()
 		return c.bot.CQReloadEventFilter(p0)
