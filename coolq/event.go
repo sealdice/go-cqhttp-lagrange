@@ -140,43 +140,41 @@ func (bot *CQBot) groupMessageEvent(_ *client.QQClient, m *message.GroupMessage)
 	bot.dispatch(gm)
 }
 
-// TODO 暂不支持临时会话
-/*
-func (bot *CQBot) tempMessageEvent(_ *client.QQClient, e *client.TempMessageEvent) {
-	m := e.Message
-	bot.checkMedia(m.Elements, m.Sender.Uin)
+func (bot *CQBot) tempMessageEvent(_ *client.QQClient, e *message.TempMessage) {
 	source := message.Source{
 		SourceType: message.SourcePrivate,
-		PrimaryID:  e.Session.Sender,
+		PrimaryID:  int64(e.Sender.Uin),
 	}
-	cqm := toStringMessage(m.Elements, source)
-	if base.AllowTempSession {
-		bot.tempSessionCache.Store(m.Sender.Uin, e.Session)
-	}
+	bot.checkMedia(e.Elements, source)
 
-	id := m.Id
+	cqm := toStringMessage(e.Elements, source)
+	//if base.AllowTempSession {
+	//	bot.tempSessionCache.Store(e.Sender.Uin, e.Session)
+	//}
+
+	id := e.ID
 	// todo(Mrs4s)
 	// if bot.db != nil { // nolint
 	// 		id = bot.InsertTempMessage(m.Sender.Uin, m)
 	// }
-	log.Infof("收到来自群 %v(%v) 内 %v(%v) 的临时会话消息: %v", m.GroupName, m.GroupCode, m.Sender.DisplayName(), m.Sender.Uin, cqm)
+	log.Infof("收到来自群 %v(%v) 内 %v(%v) 的临时会话消息: %v", e.GroupName, e.GroupName, e.Sender.Nickname, e.Sender.Uin, cqm)
 	tm := global.MSG{
-		"temp_source": e.Session.Source,
+		//"temp_source": e.Session.Source,
 		"message_id":  id,
-		"user_id":     m.Sender.Uin,
-		"message":     ToFormattedMessage(m.Elements, source),
+		"user_id":     e.Sender.Uin,
+		"message":     ToFormattedMessage(e.Elements, source),
 		"raw_message": cqm,
 		"font":        0,
 		"sender": global.MSG{
-			"user_id":  m.Sender.Uin,
-			"group_id": m.GroupCode,
-			"nickname": m.Sender.Nickname,
+			"user_id":  e.Sender.Uin,
+			"group_id": e.GroupUin,
+			"nickname": e.Sender.Nickname,
 			"sex":      "unknown",
 			"age":      0,
 		},
 	}
 	bot.dispatchEvent("message/private/group", tm)
-}*/
+}
 
 func (bot *CQBot) groupMutedEvent(c *client.QQClient, e *event2.GroupMute) {
 	g := c.GetCachedGroupInfo(e.GroupUin)
@@ -234,8 +232,6 @@ func (bot *CQBot) groupRecallEvent(c *client.QQClient, e *event2.GroupRecall) {
 	ev.Time = int64(e.Time)
 	bot.dispatch(ev)
 }
-
-//TODO 群通知
 
 func (bot *CQBot) groupNotifyEvent(c *client.QQClient, e event2.INotifyEvent) {
 	group := c.GetCachedGroupInfo(e.From())
@@ -413,13 +409,13 @@ func (bot *CQBot) friendRequestEvent(_ *client.QQClient, e *event2.NewFriendRequ
 	})
 }
 
-//func (bot *CQBot) friendAddedEvent(_ *client.QQClient, e *client.NewFriendEvent) {
-//	log.Infof("添加了新好友: %v(%v)", e.Friend.Nickname, e.Friend.Uin)
-//	bot.tempSessionCache.Delete(e.Friend.Uin)
-//	bot.dispatchEvent("notice/friend_add", global.MSG{
-//		"user_id": e.Friend.Uin,
-//	})
-//}
+func (bot *CQBot) friendAddedEvent(_ *client.QQClient, e *event2.NewFriend) {
+	log.Infof("添加了新好友: %v(%v)", e.FromNick, e.FromUin)
+	//bot.tempSessionCache.Delete(e.Friend.Uin)
+	bot.dispatchEvent("notice/friend_add", global.MSG{
+		"user_id": e.FromUin,
+	})
+}
 
 func (bot *CQBot) groupInvitedEvent(_ *client.QQClient, e *event2.GroupInvite) {
 	log.Infof("收到来自群 %v(%v) 内用户 %v(%v) 的加群邀请.", e.GroupName, e.GroupUin, e.InvitorNick, e.InvitorUin)

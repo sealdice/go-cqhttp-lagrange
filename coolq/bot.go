@@ -85,7 +85,7 @@ func NewQQBot(cli *client.QQClient) *CQBot {
 		bot.Client.SelfPrivateMessageEvent.Subscribe(bot.privateMessageEvent)
 		bot.Client.SelfGroupMessageEvent.Subscribe(bot.groupMessageEvent)
 	}
-	//bot.Client.TempMessageEvent.Subscribe(bot.tempMessageEvent)
+	bot.Client.TempMessageEvent.Subscribe(bot.tempMessageEvent)
 	bot.Client.GroupMuteEvent.Subscribe(bot.groupMutedEvent)
 	bot.Client.GroupRecallEvent.Subscribe(bot.groupRecallEvent)
 	bot.Client.GroupNotifyEvent.Subscribe(bot.groupNotifyEvent)
@@ -103,7 +103,7 @@ func NewQQBot(cli *client.QQClient) *CQBot {
 	//bot.Client.MemberCardUpdatedEvent.Subscribe(bot.memberCardUpdatedEvent)
 	bot.Client.NewFriendRequestEvent.Subscribe(bot.friendRequestEvent)
 	// TODO 成为好友
-	//bot.Client.NewFriendEvent.Subscribe(bot.friendAddedEvent)
+	bot.Client.NewFriendEvent.Subscribe(bot.friendAddedEvent)
 	bot.Client.GroupInvitedEvent.Subscribe(bot.groupInvitedEvent)
 	bot.Client.GroupMemberJoinRequestEvent.Subscribe(bot.groupJoinReqEvent)
 	// TODO 客户端变更
