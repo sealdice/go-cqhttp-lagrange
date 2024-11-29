@@ -1519,7 +1519,7 @@ func (bot *CQBot) CQGetEssenceMessageList(groupID int64) global.MSG {
 			"operator_id":   m.OperatorUin,
 		}
 		if operator := bot.Client.GetCachedMemberInfo(m.OperatorUin, uint32(groupID)); operator != nil {
-			msg["operator_nick"] = operator.MemberName
+			msg["operator_nick"] = operator.DisplayName()
 		}
 		msg["message_id"] = db.ToGlobalID(groupID, int32(m.Message.ID))
 		list = append(list, msg)

@@ -294,11 +294,7 @@ func (bot *CQBot) SendGroupMessage(groupID int64, m *message.SendingMessage) (in
 				member := bot.Client.GetCachedMemberInfo(i.TargetUin, uint32(groupID))
 				if member != nil {
 					i.TargetUID = member.UID
-					if member.MemberCard != "" {
-						i.Display = "@" + member.MemberCard
-					} else {
-						i.Display = "@" + member.MemberName
-					}
+					i.Display = "@" + member.DisplayName()
 				}
 			}
 		}

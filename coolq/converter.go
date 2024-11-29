@@ -14,8 +14,12 @@ import (
 )
 
 func convertGroupMemberInfo(groupID int64, m *entity.GroupMember) global.MSG {
-	// TODO nt 协议依然是获取不到
 	sex := "unknown"
+	//if m.Gender == 1 { // unknown = 0xff
+	//	sex = "female"
+	//} else if m.Gender == 0 {
+	//	sex = "male"
+	//}
 	role := "member"
 	switch m.Permission { // nolint:exhaustive
 	case entity.Owner:
@@ -28,7 +32,7 @@ func convertGroupMemberInfo(groupID int64, m *entity.GroupMember) global.MSG {
 	return global.MSG{
 		"group_id":          groupID,
 		"user_id":           m.Uin,
-		"nickname":          m.MemberName,
+		"nickname":          m.Nickname,
 		"card":              m.MemberCard,
 		"sex":               sex,
 		"age":               0,
