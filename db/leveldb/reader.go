@@ -6,9 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/Mrs4s/go-cqhttp/global"
+	"github.com/pkg/errors"
 )
 
 type intReader struct {

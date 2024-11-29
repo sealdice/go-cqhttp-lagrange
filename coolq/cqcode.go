@@ -15,16 +15,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/LagrangeDev/LagrangeGo/utils"
-	"github.com/LagrangeDev/LagrangeGo/utils/crypto"
-
 	"github.com/LagrangeDev/LagrangeGo/message"
+	"github.com/LagrangeDev/LagrangeGo/utils"
 	"github.com/LagrangeDev/LagrangeGo/utils/binary"
-	b14 "github.com/fumiama/go-base16384"
-	"github.com/segmentio/asm/base64"
-	log "github.com/sirupsen/logrus"
-	"github.com/tidwall/gjson"
-
+	"github.com/LagrangeDev/LagrangeGo/utils/crypto"
 	"github.com/Mrs4s/go-cqhttp/db"
 	"github.com/Mrs4s/go-cqhttp/global"
 	"github.com/Mrs4s/go-cqhttp/internal/base"
@@ -34,6 +28,10 @@ import (
 	"github.com/Mrs4s/go-cqhttp/internal/msg"
 	"github.com/Mrs4s/go-cqhttp/internal/param"
 	"github.com/Mrs4s/go-cqhttp/pkg/onebot"
+	b14 "github.com/fumiama/go-base16384"
+	"github.com/segmentio/asm/base64"
+	log "github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
 )
 
 // TODO: move this file to internal/msg, internal/onebot

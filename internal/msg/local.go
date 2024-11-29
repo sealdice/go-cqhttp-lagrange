@@ -1,8 +1,9 @@
 package msg
 
 import (
-	"github.com/LagrangeDev/LagrangeGo/message"
 	"io"
+
+	"github.com/LagrangeDev/LagrangeGo/message"
 )
 
 // Poke 拍一拍

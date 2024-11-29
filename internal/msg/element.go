@@ -2,10 +2,10 @@
 package msg
 
 import (
-	"github.com/LagrangeDev/LagrangeGo/utils/binary"
-
 	"strings"
 	"unicode/utf8"
+
+	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 )
 
 // @@@ CQ码转义处理 @@@

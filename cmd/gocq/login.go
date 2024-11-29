@@ -11,13 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Mrs4s/go-cqhttp/internal/download"
-
 	"github.com/LagrangeDev/LagrangeGo/client"
 	"github.com/LagrangeDev/LagrangeGo/client/auth"
 	"github.com/LagrangeDev/LagrangeGo/client/packets/wtlogin/qrcodestate"
 	"github.com/LagrangeDev/LagrangeGo/utils"
-
+	"github.com/Mrs4s/go-cqhttp/internal/download"
 	"github.com/mattn/go-colorable"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

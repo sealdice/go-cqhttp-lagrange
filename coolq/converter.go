@@ -5,12 +5,9 @@ import (
 	"strings"
 
 	"github.com/LagrangeDev/LagrangeGo/client/entity"
-
 	"github.com/LagrangeDev/LagrangeGo/message"
-
-	log "github.com/sirupsen/logrus"
-
 	"github.com/Mrs4s/go-cqhttp/global"
+	log "github.com/sirupsen/logrus"
 )
 
 func convertGroupMemberInfo(groupID int64, m *entity.GroupMember) global.MSG {

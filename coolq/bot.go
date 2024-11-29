@@ -12,28 +12,23 @@ import (
 	"sync"
 	"time"
 
-	"github.com/LagrangeDev/LagrangeGo/client/sign"
-
-	"github.com/LagrangeDev/LagrangeGo/utils/binary"
-
-	"github.com/Mrs4s/go-cqhttp/internal/mime"
-	"golang.org/x/image/webp"
-
+	"github.com/LagrangeDev/LagrangeGo/client"
 	"github.com/LagrangeDev/LagrangeGo/client/entity"
 	event2 "github.com/LagrangeDev/LagrangeGo/client/event"
-	"github.com/LagrangeDev/LagrangeGo/utils"
-
-	"github.com/LagrangeDev/LagrangeGo/client"
+	"github.com/LagrangeDev/LagrangeGo/client/sign"
 	"github.com/LagrangeDev/LagrangeGo/message"
-	"github.com/RomiChan/syncx"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
-
+	"github.com/LagrangeDev/LagrangeGo/utils"
+	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 	"github.com/Mrs4s/go-cqhttp/db"
 	"github.com/Mrs4s/go-cqhttp/global"
 	"github.com/Mrs4s/go-cqhttp/internal/base"
+	"github.com/Mrs4s/go-cqhttp/internal/mime"
 	"github.com/Mrs4s/go-cqhttp/internal/msg"
 	"github.com/Mrs4s/go-cqhttp/pkg/onebot"
+	"github.com/RomiChan/syncx"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/image/webp"
 )
 
 // CQBot CQBot结构体,存储Bot实例相关配置
