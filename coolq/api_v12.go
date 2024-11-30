@@ -3,10 +3,9 @@ package coolq
 import (
 	"runtime"
 
-	"github.com/tidwall/gjson"
-
 	"github.com/Mrs4s/go-cqhttp/global"
 	"github.com/Mrs4s/go-cqhttp/internal/base"
+	"github.com/tidwall/gjson"
 )
 
 // CQGetVersion 获取版本信息 OneBotV12

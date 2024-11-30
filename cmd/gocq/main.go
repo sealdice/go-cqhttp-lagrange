@@ -14,26 +14,26 @@ import (
 	"sync"
 	"time"
 
-	"github.com/LagrangeDev/LagrangeGo/utils/crypto"
-
-	"github.com/LagrangeDev/LagrangeGo/client/auth"
-
 	"github.com/LagrangeDev/LagrangeGo/client"
-	para "github.com/fumiama/go-hide-param"
-	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
-	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/pbkdf2"
-	"golang.org/x/term"
-
+	"github.com/LagrangeDev/LagrangeGo/client/auth"
+	"github.com/LagrangeDev/LagrangeGo/client/packets/pb/action"
+	"github.com/LagrangeDev/LagrangeGo/utils"
+	"github.com/LagrangeDev/LagrangeGo/utils/crypto"
 	"github.com/Mrs4s/go-cqhttp/coolq"
 	"github.com/Mrs4s/go-cqhttp/db"
 	"github.com/Mrs4s/go-cqhttp/global"
 	"github.com/Mrs4s/go-cqhttp/global/terminal"
 	"github.com/Mrs4s/go-cqhttp/internal/base"
 	"github.com/Mrs4s/go-cqhttp/internal/cache"
+	"github.com/Mrs4s/go-cqhttp/internal/selfdiagnosis"
 	"github.com/Mrs4s/go-cqhttp/internal/selfupdate"
 	"github.com/Mrs4s/go-cqhttp/modules/servers"
 	"github.com/Mrs4s/go-cqhttp/server"
+	para "github.com/fumiama/go-hide-param"
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/pbkdf2"
+	"golang.org/x/term"
 )
 
 // InitBase 解析参数并检测
@@ -326,11 +326,13 @@ func LoginInteract() {
 	global.Check(cli.RefreshAllGroupsInfo(), true)
 	GroupListLen := len(cli.GetCachedAllGroupsInfo())
 	log.Infof("共加载 %v 个群.", GroupListLen)
-	// TODO 设置在线状态 暂不支持？
-	// if uint(base.Account.Status) >= uint(len(allowStatus)) {
-	//	base.Account.Status = 0
-	//}
-	//cli.SetOnlineStatus(allowStatus[base.Account.Status])
+	if uint(base.Account.Status) >= 3000 {
+		base.Account.Status = 10
+	}
+	_ = cli.SetOnlineStatus(utils.Ternary(base.Account.Status >= 1000, action.SetStatus{
+		Status:    10,
+		ExtStatus: uint32(base.Account.Status),
+	}, action.SetStatus{Status: uint32(base.Account.Status)}))
 	servers.Run(coolq.NewQQBot(cli))
 	log.Info("资源初始化完成, 开始处理信息.")
 	log.Info("アトリは、高性能ですから!")
@@ -343,8 +345,7 @@ func LoginInteract() {
 func WaitSignal() {
 	go func() {
 		selfupdate.CheckUpdate()
-		// TODO 服务器连接质量测试
-		// selfdiagnosis.NetworkDiagnosis(cli)
+		selfdiagnosis.NetworkDiagnosis(cli)
 	}()
 
 	<-global.SetupMainSignalHandler()

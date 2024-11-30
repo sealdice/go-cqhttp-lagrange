@@ -1,15 +1,19 @@
 // Package selfdiagnosis 自我诊断相关
 package selfdiagnosis
 
-/*
+import (
+	"github.com/LagrangeDev/LagrangeGo/client"
+	log "github.com/sirupsen/logrus"
+)
+
 // NetworkDiagnosis 诊断网络状态并输出结果
 func NetworkDiagnosis(c *client.QQClient) {
 	log.Infof("开始诊断网络情况")
 	qualityInfo := c.ConnectionQualityTest()
 	log.Debugf("聊天服务器连接延迟: %vms", qualityInfo.ChatServerLatency)
 	log.Debugf("聊天服务器丢包率: %v%%", qualityInfo.ChatServerPacketLoss*10)
-	log.Debugf("长消息服务器连接延迟: %vms", qualityInfo.LongMessageServerLatency)
-	log.Debugf("长消息服务器响应延迟: %vms", qualityInfo.LongMessageServerResponseLatency)
+	//log.Debugf("长消息服务器连接延迟: %vms", qualityInfo.LongMessageServerLatency)
+	//log.Debugf("长消息服务器响应延迟: %vms", qualityInfo.LongMessageServerResponseLatency)
 	log.Debugf("媒体服务器连接延迟: %vms", qualityInfo.SrvServerLatency)
 	log.Debugf("媒体服务器丢包率: %v%%", qualityInfo.SrvServerPacketLoss*10)
 
@@ -31,21 +35,21 @@ func NetworkDiagnosis(c *client.QQClient) {
 		log.Warnf("警告: 本地连接聊天服务器丢包率为 %v%%, %v", qualityInfo.ChatServerPacketLoss*10, chatServerErrorMessage)
 	}
 
-	if qualityInfo.LongMessageServerLatency > 1000 {
-		if qualityInfo.LongMessageServerLatency == 9999 {
-			log.Errorf("错误: 长消息服务器延迟测试失败, %v 如果您使用的腾讯云服务器, 请修改DNS到114.114.114.114", longMessageServerErrorMessage)
-		} else {
-			log.Warnf("警告: 长消息延迟为 %vms, 大于 1000ms, %v", qualityInfo.LongMessageServerLatency, longMessageServerErrorMessage)
-		}
-	}
-
-	if qualityInfo.LongMessageServerResponseLatency > 2000 {
-		if qualityInfo.LongMessageServerResponseLatency == 9999 {
-			log.Errorf("错误: 长消息服务器响应延迟测试失败, %v 如果您使用的腾讯云服务器, 请修改DNS到114.114.114.114", longMessageServerErrorMessage)
-		} else {
-			log.Warnf("警告: 长消息响应延迟为 %vms, 大于 1000ms, %v", qualityInfo.LongMessageServerResponseLatency, longMessageServerErrorMessage)
-		}
-	}
+	//if qualityInfo.LongMessageServerLatency > 1000 {
+	//	if qualityInfo.LongMessageServerLatency == 9999 {
+	//		log.Errorf("错误: 长消息服务器延迟测试失败, %v 如果您使用的腾讯云服务器, 请修改DNS到114.114.114.114", longMessageServerErrorMessage)
+	//	} else {
+	//		log.Warnf("警告: 长消息延迟为 %vms, 大于 1000ms, %v", qualityInfo.LongMessageServerLatency, longMessageServerErrorMessage)
+	//	}
+	//}
+	//
+	//if qualityInfo.LongMessageServerResponseLatency > 2000 {
+	//	if qualityInfo.LongMessageServerResponseLatency == 9999 {
+	//		log.Errorf("错误: 长消息服务器响应延迟测试失败, %v 如果您使用的腾讯云服务器, 请修改DNS到114.114.114.114", longMessageServerErrorMessage)
+	//	} else {
+	//		log.Warnf("警告: 长消息响应延迟为 %vms, 大于 1000ms, %v", qualityInfo.LongMessageServerResponseLatency, longMessageServerErrorMessage)
+	//	}
+	//}
 
 	if qualityInfo.SrvServerLatency > 1000 {
 		if qualityInfo.SrvServerPacketLoss == 9999 {
@@ -59,7 +63,11 @@ func NetworkDiagnosis(c *client.QQClient) {
 		log.Warnf("警告: 本地连接媒体服务器丢包率为 %v%%, %v", qualityInfo.SrvServerPacketLoss*10, mediaServerErrorMessage)
 	}
 
-	if qualityInfo.ChatServerLatency > 1000 || qualityInfo.ChatServerPacketLoss > 0 || qualityInfo.LongMessageServerLatency > 1000 || qualityInfo.SrvServerLatency > 1000 || qualityInfo.SrvServerPacketLoss > 0 {
+	if qualityInfo.ChatServerLatency > 1000 ||
+		qualityInfo.ChatServerPacketLoss > 0 ||
+		//qualityInfo.LongMessageServerLatency > 1000 ||
+		qualityInfo.SrvServerLatency > 1000 ||
+		qualityInfo.SrvServerPacketLoss > 0 {
 		log.Infof("网络诊断完成. 发现问题, 请检查日志.")
 	} else {
 		log.Infof("网络诊断完成. 未发现问题")
@@ -75,4 +83,3 @@ func DNSDiagnosis() {
 func EnvironmentDiagnosis() {
 	// todo
 }
-*/

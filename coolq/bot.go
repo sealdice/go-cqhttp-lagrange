@@ -12,28 +12,23 @@ import (
 	"sync"
 	"time"
 
-	"github.com/LagrangeDev/LagrangeGo/client/sign"
-
-	"github.com/LagrangeDev/LagrangeGo/utils/binary"
-
-	"github.com/Mrs4s/go-cqhttp/internal/mime"
-	"golang.org/x/image/webp"
-
+	"github.com/LagrangeDev/LagrangeGo/client"
 	"github.com/LagrangeDev/LagrangeGo/client/entity"
 	event2 "github.com/LagrangeDev/LagrangeGo/client/event"
-	"github.com/LagrangeDev/LagrangeGo/utils"
-
-	"github.com/LagrangeDev/LagrangeGo/client"
+	"github.com/LagrangeDev/LagrangeGo/client/sign"
 	"github.com/LagrangeDev/LagrangeGo/message"
-	"github.com/RomiChan/syncx"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
-
+	"github.com/LagrangeDev/LagrangeGo/utils"
+	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 	"github.com/Mrs4s/go-cqhttp/db"
 	"github.com/Mrs4s/go-cqhttp/global"
 	"github.com/Mrs4s/go-cqhttp/internal/base"
+	"github.com/Mrs4s/go-cqhttp/internal/mime"
 	"github.com/Mrs4s/go-cqhttp/internal/msg"
 	"github.com/Mrs4s/go-cqhttp/pkg/onebot"
+	"github.com/RomiChan/syncx"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/image/webp"
 )
 
 // CQBot CQBot结构体,存储Bot实例相关配置
@@ -85,7 +80,7 @@ func NewQQBot(cli *client.QQClient) *CQBot {
 		bot.Client.SelfPrivateMessageEvent.Subscribe(bot.privateMessageEvent)
 		bot.Client.SelfGroupMessageEvent.Subscribe(bot.groupMessageEvent)
 	}
-	//bot.Client.TempMessageEvent.Subscribe(bot.tempMessageEvent)
+	bot.Client.TempMessageEvent.Subscribe(bot.tempMessageEvent)
 	bot.Client.GroupMuteEvent.Subscribe(bot.groupMutedEvent)
 	bot.Client.GroupRecallEvent.Subscribe(bot.groupRecallEvent)
 	bot.Client.GroupNotifyEvent.Subscribe(bot.groupNotifyEvent)
@@ -103,7 +98,7 @@ func NewQQBot(cli *client.QQClient) *CQBot {
 	//bot.Client.MemberCardUpdatedEvent.Subscribe(bot.memberCardUpdatedEvent)
 	bot.Client.NewFriendRequestEvent.Subscribe(bot.friendRequestEvent)
 	// TODO 成为好友
-	//bot.Client.NewFriendEvent.Subscribe(bot.friendAddedEvent)
+	bot.Client.NewFriendEvent.Subscribe(bot.friendAddedEvent)
 	bot.Client.GroupInvitedEvent.Subscribe(bot.groupInvitedEvent)
 	bot.Client.GroupMemberJoinRequestEvent.Subscribe(bot.groupJoinReqEvent)
 	// TODO 客户端变更
@@ -294,11 +289,7 @@ func (bot *CQBot) SendGroupMessage(groupID int64, m *message.SendingMessage) (in
 				member := bot.Client.GetCachedMemberInfo(i.TargetUin, uint32(groupID))
 				if member != nil {
 					i.TargetUID = member.UID
-					if member.MemberCard != "" {
-						i.Display = "@" + member.MemberCard
-					} else {
-						i.Display = "@" + member.MemberName
-					}
+					i.Display = "@" + member.DisplayName()
 				}
 			}
 		}

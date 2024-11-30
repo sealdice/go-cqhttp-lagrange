@@ -3,13 +3,12 @@ package mongodb
 import (
 	"context"
 
+	"github.com/Mrs4s/go-cqhttp/db"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v3"
-
-	"github.com/Mrs4s/go-cqhttp/db"
 )
 
 type database struct {
