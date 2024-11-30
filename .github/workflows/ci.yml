@@ -52,5 +52,5 @@ jobs:
         uses: actions/upload-artifact@v3
         if: ${{ !github.head_ref }}
         with:
-          name: ${{ matrix.goos }}_${{ matrix.goarch }}
+          name: lagrange-gocq_${{ matrix.goos }}_${{ matrix.goarch }}
           path: output/
