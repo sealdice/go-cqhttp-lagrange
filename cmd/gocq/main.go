@@ -542,7 +542,7 @@ func JsonParse(js []byte) (*auth.AppInfo, error) {
 		SignExtraHexLower string `json:"-"`
 		SignExtraHexUpper string `json:"-"`
 	}{}
-	err := json.Unmarshal(js, trans)
+	err := json.Unmarshal(js, &trans)
 	if err != nil {
 		return nil, err
 	}
