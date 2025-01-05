@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -228,7 +229,7 @@ func LoginInteract() {
 			log.Warnf("从文件 %s 读取本地版本信息文件出错.", versionFile)
 			os.Exit(0)
 		}
-		info, err := auth.UnmarshalAppInfo(b)
+		info, err := JsonParse(b)
 		if err != nil {
 			log.Warnf("从文件 %s 解析本地版本信息出错: %v", versionFile, err)
 			os.Exit(0)
@@ -514,4 +515,57 @@ func (p protocolLogger) Dump(data []byte, format string, arg ...any) {
 	message := fmt.Sprintf(format, arg...)
 	log.Errorf("出现错误 %v. 详细信息已转储至文件 %v 请连同日志提交给开发者处理", message, dumpFile)
 	_ = os.WriteFile(dumpFile, data, 0o644)
+}
+
+func JsonParse(js []byte) (*auth.AppInfo, error) {
+	trans := struct {
+		OS       string `json:"Os"`
+		Kernel   string `json:"Kernel"`
+		VendorOS string `json:"VendorOs"`
+
+		CurrentVersion   string `json:"CurrentVersion"`
+		BuildVersion     int    `json:"BuildVersion"`
+		MiscBitmap       int    `json:"MiscBitmap"`
+		PTVersion        string `json:"PtVersion"`
+		PTOSVersion      int    `json:"SsoVersion"`
+		PackageName      string `json:"PackageName"`
+		WTLoginSDK       string `json:"WtLoginSdk"`
+		PackageSign      string `json:"PackageSign"`
+		AppID            int    `json:"AppId"`
+		SubAppID         int    `json:"SubAppId"`
+		AppIDQrcode      int    `json:"AppIdQrCode"`
+		AppClientVersion int    `json:"AppClientVersion"`
+		MainSigmap       int    `json:"MainSigMap"`
+		SubSigmap        int    `json:"SubSigMap"`
+		NTLoginType      int    `json:"NTLoginType"`
+
+		SignExtraHexLower string `json:"-"`
+		SignExtraHexUpper string `json:"-"`
+	}{}
+	err := json.Unmarshal(js, trans)
+	if err != nil {
+		return nil, err
+	}
+	return &auth.AppInfo{
+		OS:                trans.OS,
+		Kernel:            trans.Kernel,
+		VendorOS:          trans.VendorOS,
+		CurrentVersion:    trans.CurrentVersion,
+		BuildVersion:      trans.BuildVersion,
+		MiscBitmap:        trans.MiscBitmap,
+		PTVersion:         trans.PTVersion,
+		PTOSVersion:       trans.PTOSVersion,
+		PackageName:       trans.PackageName,
+		WTLoginSDK:        trans.WTLoginSDK,
+		PackageSign:       trans.PackageSign,
+		AppID:             trans.AppID,
+		SubAppID:          trans.SubAppID,
+		AppIDQrcode:       trans.AppIDQrcode,
+		AppClientVersion:  trans.AppClientVersion,
+		MainSigmap:        trans.MainSigmap,
+		SubSigmap:         trans.SubSigmap,
+		NTLoginType:       trans.NTLoginType,
+		SignExtraHexLower: trans.SignExtraHexLower,
+		SignExtraHexUpper: trans.SignExtraHexUpper,
+	}, nil
 }
