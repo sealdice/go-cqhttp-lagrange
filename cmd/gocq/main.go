@@ -229,7 +229,7 @@ func LoginInteract() {
 			log.Warnf("从文件 %s 读取本地版本信息文件出错.", versionFile)
 			os.Exit(0)
 		}
-		info, err := JsonParse(b)
+		info, err := JsParse(b)
 		if err != nil {
 			log.Warnf("从文件 %s 解析本地版本信息出错: %v", versionFile, err)
 			os.Exit(0)
@@ -517,7 +517,7 @@ func (p protocolLogger) Dump(data []byte, format string, arg ...any) {
 	_ = os.WriteFile(dumpFile, data, 0o644)
 }
 
-func JsonParse(js []byte) (*auth.AppInfo, error) {
+func JsParse(js []byte) (*auth.AppInfo, error) {
 	trans := struct {
 		OS       string `json:"Os"`
 		Kernel   string `json:"Kernel"`
