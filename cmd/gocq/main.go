@@ -517,6 +517,7 @@ func (p protocolLogger) Dump(data []byte, format string, arg ...any) {
 	_ = os.WriteFile(dumpFile, data, 0o644)
 }
 
+// 兼容lgrOnebot的转换函数
 func JsParse(js []byte) (*auth.AppInfo, error) {
 	trans := struct {
 		OS       string `json:"Os"`
