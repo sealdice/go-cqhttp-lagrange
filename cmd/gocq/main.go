@@ -441,7 +441,10 @@ func newClient(app *auth.AppInfo) *client.QQClient {
 	}
 	c := client.NewClientEmpty()
 	c.UseVersion(app)
+	signer := NewSigner()
+	c.UseSignProvider(signer)
 	c.AddSignServer(signUrls...)
+	signer.Init()
 	// TODO 服务器更新通知
 	// c.OnServerUpdated(func(bot *client.QQClient, e *client.ServerUpdatedEvent) bool {
 	//	if !base.UseSSOAddress {
