@@ -558,10 +558,15 @@ func (bot *CQBot) checkMedia(e []message.IMessageElement, source message.Source)
 				w.WriteBytes(i.Sha1)
 				w.WritePacketString(i.Name, "u32", true)
 				w.WritePacketString(i.UUID, "u32", true)
+				w.WriteU32(uint32(source.PrimaryID))
 			})
 			filename := hex.EncodeToString(i.Md5) + ".video"
 			cache.Video.Insert(i.Md5, data)
-			i.URL, _ = bot.Client.GetVideoURL(source.SourceType == message.SourceGroup, i.UUID)
+			if source.SourceType == message.SourceGroup {
+				i.URL, _ = bot.Client.GetGroupVideoURL(uint32(source.PrimaryID), i.Node)
+			} else {
+				i.URL, _ = bot.Client.GetPrivateVideoURL(i.Node)
+			}
 			i.Name = filename
 		}
 	}
