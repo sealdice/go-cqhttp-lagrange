@@ -6,13 +6,14 @@ import (
 
 	"github.com/LagrangeDev/LagrangeGo/client/entity"
 	"github.com/LagrangeDev/LagrangeGo/message"
-	"github.com/Mrs4s/go-cqhttp/global"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Mrs4s/go-cqhttp/global"
 )
 
 func convertGroupMemberInfo(groupID int64, m *entity.GroupMember) global.MSG {
 	sex := "unknown"
-	//if m.Gender == 1 { // unknown = 0xff
+	// if m.Gender == 1 { // unknown = 0xff
 	//	sex = "female"
 	//} else if m.Gender == 0 {
 	//	sex = "male"

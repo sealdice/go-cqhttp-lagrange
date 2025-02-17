@@ -15,11 +15,12 @@ import (
 	"github.com/LagrangeDev/LagrangeGo/client/auth"
 	"github.com/LagrangeDev/LagrangeGo/client/packets/wtlogin/qrcodestate"
 	"github.com/LagrangeDev/LagrangeGo/utils"
-	"github.com/Mrs4s/go-cqhttp/internal/download"
 	"github.com/mattn/go-colorable"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"gopkg.ilharper.com/x/isatty"
+
+	"github.com/Mrs4s/go-cqhttp/internal/download"
 )
 
 var console = bufio.NewReader(os.Stdin)
@@ -194,7 +195,7 @@ func loginResponseProcessor(res *client.LoginResponse) error {
 		if res.Success {
 			return nil
 		}
-		//var text string
+		// var text string
 		//nolint:exhaustive
 		switch res.Error {
 		case client.SliderNeededError:
@@ -207,7 +208,7 @@ func loginResponseProcessor(res *client.LoginResponse) error {
 			}
 			res, err = cli.SubmitCaptcha(ticket, randStr, strings.Split(strings.Split(res.VerifyURL, "sid=")[1], "&")[0])
 			continue
-		//case client.NeedCaptcha:
+		// case client.NeedCaptcha:
 		//	log.Warnf("登录需要验证码.")
 		//	_ = os.WriteFile("captcha.jpg", res.CaptchaImage, 0o644)
 		//	log.Warnf("请输入验证码 (captcha.jpg)： (Enter 提交)")

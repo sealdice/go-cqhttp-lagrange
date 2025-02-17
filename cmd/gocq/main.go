@@ -453,7 +453,7 @@ func newClient(app *auth.AppInfo) *client.QQClient {
 	//	}
 	//	log.Infof("收到服务器地址更新通知, 将在下一次重连时应用. ")
 	//	return true
-	//})
+	// })
 	if global.FileExists("address.txt") {
 		log.Infof("检测到 address.txt 文件. 将覆盖目标IP.")
 		addr := global.ReadAddrFile("address.txt")

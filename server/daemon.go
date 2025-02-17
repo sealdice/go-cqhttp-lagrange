@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Mrs4s/go-cqhttp/global"
-
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Mrs4s/go-cqhttp/global"
 )
 
 // Daemon go-cqhttp server 的 daemon的实现函数

@@ -111,7 +111,7 @@ func (bot *CQBot) groupMessageEvent(_ *client.QQClient, m *message.GroupMessage)
 	}
 	bot.checkMedia(m.Elements, source)
 	// TODO 群聊文件上传
-	//for _, elem := range m.Elements {
+	// for _, elem := range m.Elements {
 	//	if file, ok := elem.(*message.GroupFileElement); ok {
 	//		log.Infof("群 %v(%v) 内 %v(%v) 上传了文件: %v", m.GroupName, m.GroupCode, m.Sender.CardName, m.Sender.Uin, file.Name)
 	//		bot.dispatchEvent("notice/group_upload", global.MSG{
@@ -147,7 +147,7 @@ func (bot *CQBot) tempMessageEvent(_ *client.QQClient, e *message.TempMessage) {
 	bot.checkMedia(e.Elements, source)
 
 	cqm := toStringMessage(e.Elements, source)
-	//if base.AllowTempSession {
+	// if base.AllowTempSession {
 	//	bot.tempSessionCache.Store(e.Sender.Uin, e.Session)
 	//}
 
@@ -158,7 +158,7 @@ func (bot *CQBot) tempMessageEvent(_ *client.QQClient, e *message.TempMessage) {
 	// }
 	log.Infof("收到来自群 %v(%v) 内 %v(%v) 的临时会话消息: %v", e.GroupName, e.GroupName, e.Sender.Nickname, e.Sender.Uin, cqm)
 	tm := global.MSG{
-		//"temp_source": e.Session.Source,
+		// "temp_source": e.Session.Source,
 		"message_id":  id,
 		"user_id":     e.Sender.Uin,
 		"message":     ToFormattedMessage(e.Elements, source),
@@ -369,7 +369,7 @@ func (bot *CQBot) memberPermissionChangedEvent(_ *client.QQClient, e *event2.Gro
 }
 
 // TODO 群名片变更
-//func (bot *CQBot) memberCardUpdatedEvent(_ *client.QQClient, e *client.MemberCardUpdatedEvent) {
+// func (bot *CQBot) memberCardUpdatedEvent(_ *client.QQClient, e *client.MemberCardUpdatedEvent) {
 //	log.Infof("群 %v 的 %v 更新了名片 %v -> %v", formatGroupName(e.Group), formatMemberName(e.Member), e.OldCard, e.Member.CardName)
 //	bot.dispatchEvent("notice/group_card", global.MSG{
 //		"group_id": e.Group.Code,
@@ -410,7 +410,7 @@ func (bot *CQBot) friendRequestEvent(_ *client.QQClient, e *event2.NewFriendRequ
 
 func (bot *CQBot) friendAddedEvent(_ *client.QQClient, e *event2.NewFriend) {
 	log.Infof("添加了新好友: %v(%v)", e.FromNick, e.FromUin)
-	//bot.tempSessionCache.Delete(e.Friend.Uin)
+	// bot.tempSessionCache.Delete(e.Friend.Uin)
 	bot.dispatchEvent("notice/friend_add", global.MSG{
 		"user_id": e.FromUin,
 	})
@@ -441,7 +441,7 @@ func (bot *CQBot) groupJoinReqEvent(c *client.QQClient, e *event2.GroupMemberJoi
 	})
 }
 
-//func (bot *CQBot) otherClientStatusChangedEvent(_ *client.QQClient, e *client.OtherClientStatusChangedEvent) {
+// func (bot *CQBot) otherClientStatusChangedEvent(_ *client.QQClient, e *client.OtherClientStatusChangedEvent) {
 //	if e.Online {
 //		log.Infof("Bot 账号在客户端 %v (%v) 登录.", e.Client.DeviceName, e.Client.DeviceKind)
 //	} else {
@@ -525,7 +525,7 @@ func (bot *CQBot) checkMedia(e []message.IMessageElement, source message.Source)
 		switch i := elem.(type) {
 		case *message.ImageElement:
 			// 闪照已经4了(私聊还没)
-			//if i.Flash && source.PrimaryID != 0 {
+			// if i.Flash && source.PrimaryID != 0 {
 			//	u, err := bot.Client.GetGroupImageURL(uint32(source.PrimaryID), i.MsgInfo.MsgInfoBody[0].Index)
 			//	if err != nil {
 			//		log.Warnf("获取闪照地址时出现错误: %v", err)

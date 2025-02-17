@@ -21,6 +21,9 @@ import (
 	"github.com/LagrangeDev/LagrangeGo/message"
 	"github.com/LagrangeDev/LagrangeGo/utils"
 	"github.com/LagrangeDev/LagrangeGo/utils/binary"
+	log "github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
+
 	"github.com/Mrs4s/go-cqhttp/db"
 	"github.com/Mrs4s/go-cqhttp/global"
 	"github.com/Mrs4s/go-cqhttp/internal/base"
@@ -30,8 +33,6 @@ import (
 	"github.com/Mrs4s/go-cqhttp/internal/param"
 	"github.com/Mrs4s/go-cqhttp/modules/filter"
 	"github.com/Mrs4s/go-cqhttp/pkg/onebot"
-	log "github.com/sirupsen/logrus"
-	"github.com/tidwall/gjson"
 )
 
 // CQGetLoginInfo 获取登录号信息
@@ -613,7 +614,6 @@ func (bot *CQBot) CQSetGroupCard(groupID, userID int64, card string) global.MSG 
 		if m := bot.Client.GetCachedMemberInfo(uint32(userID), uint32(groupID)); m != nil {
 			if err := bot.Client.SetGroupMemberName(uint32(groupID), uint32(userID), card); err != nil {
 				return Failed(100, "SET_CARD_FAILED", err.Error())
-
 			}
 			return OK(nil)
 		}
@@ -922,7 +922,7 @@ func (bot *CQBot) CQSetGroupAdmin(groupID, userID int64, enable bool) global.MSG
 // https://beautyyu.one
 // @route(set_group_anonymous)
 // @default(enable=true)
-//func (bot *CQBot) CQSetGroupAnonymous(groupID int64, enable bool) global.MSG {
+// func (bot *CQBot) CQSetGroupAnonymous(groupID int64, enable bool) global.MSG {
 //	if g := bot.Client.FindGroup(groupID); g != nil {
 //		g.SetAnonymous(enable)
 //		return OK(nil)
@@ -1013,7 +1013,7 @@ func (bot *CQBot) CQGetStrangerInfo(userID int64) global.MSG {
 		"nickname": info.Nickname,
 		"qid":      info.QID,
 		"sex": func() string {
-			//if info.Sex == 1 {
+			// if info.Sex == 1 {
 			//	return "female"
 			//} else if info.Sex == 0 {
 			//	return "male"
@@ -1024,7 +1024,7 @@ func (bot *CQBot) CQGetStrangerInfo(userID int64) global.MSG {
 		"sign":  info.PersonalSign,
 		"age":   info.Age,
 		"level": info.Level,
-		//"login_days": info.LoginDays,
+		// "login_days": info.LoginDays,
 		"vip_level": info.VipLevel,
 	})
 }
@@ -1329,7 +1329,7 @@ func (bot *CQBot) CQGetGroupMessageHistory(groupID int64, seq int64) global.MSG 
 //
 // https://docs.go-cqhttp.org/api/#%E8%8E%B7%E5%8F%96%E5%BD%93%E5%89%8D%E8%B4%A6%E5%8F%B7%E5%9C%A8%E7%BA%BF%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%88%97%E8%A1%A8
 // @route(get_online_clients)
-//func (bot *CQBot) CQGetOnlineClients(noCache bool) global.MSG {
+// func (bot *CQBot) CQGetOnlineClients(noCache bool) global.MSG {
 //	if noCache {
 //		if err := bot.Client.RefreshStatus(); err != nil {
 //			log.Warnf("刷新客户端状态时出现问题 %v", err)
@@ -1407,7 +1407,6 @@ func (bot *CQBot) CQSetGroupPortrait(groupID int64, file, cache string) global.M
 			return OK(nil)
 		}
 		Failed(100, "PERMISSION_DENIED", "机器人权限不足")
-
 	}
 	return Failed(100, "GROUP_NOT_FOUND", "群聊不存在")
 }
@@ -1417,7 +1416,7 @@ func (bot *CQBot) CQSetGroupPortrait(groupID int64, file, cache string) global.M
 // https://git.io/Jtz1p
 // @route(set_group_anonymous_ban)
 // @rename(flag->"[anonymous_flag\x2Canonymous.flag].0")
-//func (bot *CQBot) CQSetGroupAnonymousBan(groupID int64, flag string, duration int32) global.MSG {
+// func (bot *CQBot) CQSetGroupAnonymousBan(groupID int64, flag string, duration int32) global.MSG {
 //	if flag == "" {
 //		return Failed(100, "INVALID_FLAG", "无效的flag")
 //	}
@@ -1554,7 +1553,7 @@ func (bot *CQBot) CQGetVersionInfo() global.MSG {
 		"runtime_os":                 runtime.GOOS,
 		"version":                    base.Version,
 		"protocol_name":              "nt",
-		//"protocol_name":              bot.Client.Device().Protocol,
+		// "protocol_name":              bot.Client.Device().Protocol,
 	})
 }
 
@@ -1562,7 +1561,7 @@ func (bot *CQBot) CQGetVersionInfo() global.MSG {
 //
 // https://club.vip.qq.com/onlinestatus/set
 // @route(_get_model_show)
-//func (bot *CQBot) CQGetModelShow(model string) global.MSG {
+// func (bot *CQBot) CQGetModelShow(model string) global.MSG {
 //	variants, err := bot.Client.GetModelShow(model)
 //	if err != nil {
 //		return Failed(100, "GET_MODEL_SHOW_API_ERROR", "无法获取在线机型")
@@ -1595,7 +1594,7 @@ func (bot *CQBot) CQSendGroupSign(groupID int64) global.MSG {
 //
 // https://club.vip.qq.com/onlinestatus/set
 // @route(_set_model_show)
-//func (bot *CQBot) CQSetModelShow(model, modelShow string) global.MSG {
+// func (bot *CQBot) CQSetModelShow(model, modelShow string) global.MSG {
 //	err := bot.Client.SetModelShow(model, modelShow)
 //	if err != nil {
 //		return Failed(100, "SET_MODEL_SHOW_API_ERROR", "无法设置在线机型")
@@ -1627,7 +1626,7 @@ func (bot *CQBot) CQMarkMessageAsRead(msgID int32) global.MSG {
 // CQSetQQProfile 设置 QQ 资料
 //
 // @route(set_qq_profile)
-//func (bot *CQBot) CQSetQQProfile(nickname, company, email, college, personalNote gjson.Result) global.MSG {
+// func (bot *CQBot) CQSetQQProfile(nickname, company, email, college, personalNote gjson.Result) global.MSG {
 //	u := client.NewProfileDetailUpdate()
 //
 //	fi := func(f gjson.Result, do func(value string) client.ProfileDetailUpdate) {

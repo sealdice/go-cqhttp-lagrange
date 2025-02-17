@@ -88,7 +88,6 @@ func (c *signer) Sign(cmd string, seq uint32, data []byte) (*sign.Response, erro
 		sortFlag = true
 		instance.latency.Store(serverLatencyDown)
 		log.Errorf("签名时出现错误：%v", err)
-
 	}
 	return nil, ErrAllSignDown
 }

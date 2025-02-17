@@ -3,11 +3,12 @@ package config
 
 import (
 	"bufio"
-	_ "embed" // embed the default config file
 	"fmt"
 	"os"
 	"regexp"
 	"strings"
+
+	_ "embed" // embed the default config file
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"

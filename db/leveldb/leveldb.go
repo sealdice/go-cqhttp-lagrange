@@ -5,11 +5,12 @@ import (
 
 	"github.com/LagrangeDev/LagrangeGo/utils"
 	"github.com/LagrangeDev/LagrangeGo/utils/binary"
-	"github.com/Mrs4s/go-cqhttp/db"
 	"github.com/pkg/errors"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"gopkg.in/yaml.v3"
+
+	"github.com/Mrs4s/go-cqhttp/db"
 )
 
 type database struct {
