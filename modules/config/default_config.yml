@@ -26,7 +26,7 @@ account: # 账号相关
   #
   # 服务器不提供自建
   sign-servers:
-    - url: '-'  # 主签名服务器地址， 必填
+    - url: 'https://sign.lagrangecore.org/api/sign/30366'  # 主签名服务器地址， 必填
     - url: '-'  # 备用
 
   # 连续寻找可用签名服务器最大尝试次数
