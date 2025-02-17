@@ -1029,7 +1029,6 @@ func (bot *CQBot) readVideoCache(b []byte) message.IMessageElement {
 	node := oidb.IndexNode{
 		FileUuid: video.UUID,
 		Info: &oidb.FileInfo{
-			FileSize: 2021754,
 			FileSha1: hex.EncodeToString(video.Sha1),
 			FileHash: hex.EncodeToString(video.Md5),
 			FileName: video.Name,
