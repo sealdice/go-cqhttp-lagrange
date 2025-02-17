@@ -27,7 +27,6 @@ linters:
     - gofmt
     - goimports
     - errcheck
-    - exportloopref
     - exhaustive
     - bidichk
     - gocritic
