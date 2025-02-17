@@ -25,12 +25,12 @@ import (
 
 const serverLatencyDown = math.MaxUint32
 
+// ErrAllSignDown 所有签名服务器都不可用
 var ErrAllSignDown = errors.New("all sign down")
 
 type (
-	Signer struct {
+	signer struct {
 		lock         sync.RWMutex
-		signCount    atomic.Uint32
 		instances    []*remote
 		app          *auth.AppInfo
 		extraHeaders http.Header
@@ -43,32 +43,34 @@ type (
 	}
 )
 
-func NewSigner() *Signer {
-	return &Signer{
+func newSigner() *signer {
+	return &signer{
 		extraHeaders: http.Header{},
 		doneChan:     make(chan struct{}),
 	}
 }
 
-func (c *Signer) Init() {
+func (c *signer) init() {
 	go func() {
-		c.Check()
+		c.check()
 		ticker := time.NewTicker(30 * time.Minute)
 		defer ticker.Stop()
 		select {
 		case <-c.doneChan:
 			return
 		case <-ticker.C:
-			c.Check()
+			c.check()
 		}
 	}()
 }
 
-func (c *Signer) Release() {
+// Release 释放资源
+func (c *signer) Release() {
 	close(c.doneChan)
 }
 
-func (c *Signer) Sign(cmd string, seq uint32, data []byte) (*sign.Response, error) {
+// Sign 对数据包签名
+func (c *signer) Sign(cmd string, seq uint32, data []byte) (*sign.Response, error) {
 	sortFlag := false
 	defer func() {
 		if sortFlag {
@@ -79,18 +81,19 @@ func (c *Signer) Sign(cmd string, seq uint32, data []byte) (*sign.Response, erro
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	for _, instance := range c.instances {
-		if resp, err := instance.sign(cmd, seq, data, c.extraHeaders); err == nil {
+		resp, err := instance.sign(cmd, seq, data, c.extraHeaders)
+		if err == nil {
 			return resp, nil
-		} else {
-			sortFlag = true
-			instance.latency.Store(serverLatencyDown)
-			log.Errorf("签名时出现错误：%v", err)
 		}
+		sortFlag = true
+		instance.latency.Store(serverLatencyDown)
+		log.Errorf("签名时出现错误：%v", err)
+
 	}
 	return nil, ErrAllSignDown
 }
 
-func (c *Signer) sortByLatency() {
+func (c *signer) sortByLatency() {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	sort.Slice(c.instances, func(i, j int) bool {
@@ -98,7 +101,8 @@ func (c *Signer) sortByLatency() {
 	})
 }
 
-func (c *Signer) AddRequestHeader(header map[string]string) {
+// AddRequestHeader 添加请求头
+func (c *signer) AddRequestHeader(header map[string]string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	for k, v := range header {
@@ -106,7 +110,8 @@ func (c *Signer) AddRequestHeader(header map[string]string) {
 	}
 }
 
-func (c *Signer) AddSignServer(signServers ...string) {
+// AddSignServer 添加签名服务器
+func (c *signer) AddSignServer(signServers ...string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.instances = append(c.instances, utils.Map[string, *remote](signServers, func(s string) *remote {
@@ -114,7 +119,8 @@ func (c *Signer) AddSignServer(signServers ...string) {
 	})...)
 }
 
-func (c *Signer) GetSignServer() []string {
+// GetSignServer 获取签名服务器
+func (c *signer) GetSignServer() []string {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	return utils.Map(c.instances, func(sign *remote) string {
@@ -122,7 +128,8 @@ func (c *Signer) GetSignServer() []string {
 	})
 }
 
-func (c *Signer) SetAppInfo(app *auth.AppInfo) {
+// SetAppInfo 设置版本信息
+func (c *signer) SetAppInfo(app *auth.AppInfo) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.app = app
@@ -130,7 +137,7 @@ func (c *Signer) SetAppInfo(app *auth.AppInfo) {
 		app.CurrentVersion, runtime.GOOS, runtime.GOARCH, base.Version))
 }
 
-func (c *Signer) Check() {
+func (c *signer) check() {
 	log.Infoln("开始签名服务器质量测试")
 	availableQuantity := 0
 	wg := sync.WaitGroup{}
