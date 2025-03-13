@@ -676,15 +676,15 @@ func (bot *CQBot) ConvertElement(spec *onebot.Spec, elem msg.Element, sourceType
 	//		return nil, err
 	//	}
 	//	return &message.VoiceElement{Data: base.ResampleSilk(data)}, nil
-	//case "face":
-	//	id, err := strconv.Atoi(elem.Get("id"))
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	if elem.Get("type") == "sticker" {
-	//		return &message.AnimatedSticker{ID: int32(id)}, nil
-	//	}
-	//	return message.NewFace(int32(id)), nil
+	case "face":
+		id, err := strconv.Atoi(elem.Get("id"))
+		if err != nil {
+			return nil, err
+		}
+		//if elem.Get("type") == "sticker" {
+		//	return &message.AnimatedSticker{ID: int32(id)}, nil
+		//}
+		return message.NewFace(uint32(id)), nil
 	//case "share":
 	//	return message.NewUrlShare(elem.Get("url"), elem.Get("title"), elem.Get("content"), elem.Get("image")), nil
 	//case "music":
