@@ -160,7 +160,7 @@ func (c *signer) check() {
 }
 
 func (i *remote) sign(cmd string, seq uint32, buf []byte, header http.Header) (signResp *sign.Response, err error) {
-	if !sign.ContainSignPKG(cmd) {
+	if !(sign.ContainSignPKG(cmd) || cmd == "wtlogin.trans_emp") {
 		return nil, nil
 	}
 	signReq := sign.Request{
