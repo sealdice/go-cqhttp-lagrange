@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/LagrangeDev/LagrangeGo/utils"
-
 	"github.com/RomiChan/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"

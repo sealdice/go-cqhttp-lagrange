@@ -5,9 +5,8 @@ import (
 	"path/filepath"
 	"unsafe"
 
-	"golang.org/x/sys/windows"
-
 	"github.com/pkg/errors"
+	"golang.org/x/sys/windows"
 )
 
 // RunningByDoubleClick 检查是否通过双击直接运行

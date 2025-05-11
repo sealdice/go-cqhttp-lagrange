@@ -15,10 +15,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LagrangeDev/LagrangeGo/client/packets/pb/service/oidb"
 	"github.com/LagrangeDev/LagrangeGo/message"
 	"github.com/LagrangeDev/LagrangeGo/utils"
 	"github.com/LagrangeDev/LagrangeGo/utils/binary"
 	"github.com/LagrangeDev/LagrangeGo/utils/crypto"
+	b14 "github.com/fumiama/go-base16384"
+	"github.com/segmentio/asm/base64"
+	log "github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
+
 	"github.com/Mrs4s/go-cqhttp/db"
 	"github.com/Mrs4s/go-cqhttp/global"
 	"github.com/Mrs4s/go-cqhttp/internal/base"
@@ -28,10 +34,6 @@ import (
 	"github.com/Mrs4s/go-cqhttp/internal/msg"
 	"github.com/Mrs4s/go-cqhttp/internal/param"
 	"github.com/Mrs4s/go-cqhttp/pkg/onebot"
-	b14 "github.com/fumiama/go-base16384"
-	"github.com/segmentio/asm/base64"
-	log "github.com/sirupsen/logrus"
-	"github.com/tidwall/gjson"
 )
 
 // TODO: move this file to internal/msg, internal/onebot
@@ -129,7 +131,7 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 				},
 			}
 		// TODO RedBagElement
-		//case *message.RedBagElement:
+		// case *message.RedBagElement:
 		//	m = msg.Element{
 		//		Type: "redbag",
 		//		Data: pairs{
@@ -172,7 +174,7 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 				{K: "subType", V: strconv.FormatInt(int64(o.SubType), 10)},
 				{K: "url", V: o.URL},
 			}
-			//switch {
+			// switch {
 			//case o.Flash:
 			//	data = append(data, pair{K: "type", V: "flash"})
 			//case o.EffectID != 0:
@@ -183,7 +185,7 @@ func toElements(e []message.IMessageElement, source message.Source) (r []msg.Ele
 				Type: "image",
 				Data: data,
 			}
-		//case *message.FriendImageElement:
+		// case *message.FriendImageElement:
 		//	data := pairs{
 		//		{K: "file", V: hex.EncodeToString(o.Md5) + ".image"},
 		//		{K: "url", V: o.Url},
@@ -311,7 +313,7 @@ func ToMessageContent(e []message.IMessageElement, source message.Source) (r []g
 					},
 				}
 			}
-		//case *message.RedBagElement:
+		// case *message.RedBagElement:
 		//	m = global.MSG{
 		//		"type": "redbag",
 		//		"data": global.MSG{"title": o.Title, "type": int(o.MsgType)},
@@ -349,7 +351,7 @@ func ToMessageContent(e []message.IMessageElement, source message.Source) (r []g
 				"type": "image",
 				"data": data,
 			}
-		//case *message.FriendImageElement:
+		// case *message.FriendImageElement:
 		//	data := global.MSG{"file": hex.EncodeToString(o.Md5) + ".image", "url": o.Url}
 		//	if o.Flash {
 		//		data["type"] = "flash"
@@ -668,21 +670,21 @@ func (bot *CQBot) ConvertElement(spec *onebot.Spec, elem msg.Element, sourceType
 	case "poke":
 		t, _ := strconv.ParseInt(elem.Get("qq"), 10, 64)
 		return &msg.Poke{Target: t}, nil
-	//case "tts":
+	// case "tts":
 	//	data, err := bot.Client.GetTts(elem.Get("text"))
 	//	if err != nil {
 	//		return nil, err
 	//	}
 	//	return &message.VoiceElement{Data: base.ResampleSilk(data)}, nil
-	//case "face":
-	//	id, err := strconv.Atoi(elem.Get("id"))
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	if elem.Get("type") == "sticker" {
-	//		return &message.AnimatedSticker{ID: int32(id)}, nil
-	//	}
-	//	return message.NewFace(int32(id)), nil
+	case "face":
+		id, err := strconv.Atoi(elem.Get("id"))
+		if err != nil {
+			return nil, err
+		}
+		//if elem.Get("type") == "sticker" {
+		//	return &message.AnimatedSticker{ID: int32(id)}, nil
+		//}
+		return message.NewFace(uint32(id)), nil
 	//case "share":
 	//	return message.NewUrlShare(elem.Get("url"), elem.Get("title"), elem.Get("content"), elem.Get("image")), nil
 	//case "music":
@@ -796,7 +798,7 @@ func (bot *CQBot) ConvertElement(spec *onebot.Spec, elem msg.Element, sourceType
 	//	return message.NewRichJson(data), nil
 	case "json":
 		return message.NewLightApp(elem.Get("data")), nil
-	//case "cardimage":
+	// case "cardimage":
 	//	source := elem.Get("source")
 	//	icon := elem.Get("icon")
 	//	brief := elem.Get("brief")
@@ -857,7 +859,7 @@ func (bot *CQBot) ConvertElement(spec *onebot.Spec, elem msg.Element, sourceType
 			v.File = cacheFile
 		}
 		return v, nil
-	//case "file":
+	// case "file":
 	//	path := elem.Get("path")
 	//	name := elem.Get("name")
 	//	size, _ := strconv.ParseInt(elem.Get("size"), 10, 64)
@@ -1023,12 +1025,26 @@ func (bot *CQBot) readVideoCache(b []byte) message.IMessageElement {
 		Name: r.ReadStringWithLength("u32", true),
 		UUID: r.ReadStringWithLength("u32", true),
 	}
-	video.URL, _ = bot.Client.GetVideoURL(isGroup, video.UUID)
+	target := r.ReadU32()
+	node := oidb.IndexNode{
+		FileUuid: video.UUID,
+		Info: &oidb.FileInfo{
+			FileSha1: hex.EncodeToString(video.Sha1),
+			FileHash: hex.EncodeToString(video.Md5),
+			FileName: video.Name,
+		},
+		StoreId: 1,
+	}
+	if isGroup {
+		video.URL, _ = bot.Client.GetGroupVideoURL(target, &node)
+	} else {
+		video.URL, _ = bot.Client.GetPrivateVideoURL(&node)
+	}
 	return video
 }
 
 //// makeShowPic 一种xml 方式发送的群消息图片
-//func (bot *CQBot) makeShowPic(elem message.IMessageElement, source string, brief string, icon string, minWidth int64, minHeight int64, maxWidth int64, maxHeight int64, group bool) ([]message.IMessageElement, error) {
+// func (bot *CQBot) makeShowPic(elem message.IMessageElement, source string, brief string, icon string, minWidth int64, minHeight int64, maxWidth int64, maxHeight int64, group bool) ([]message.IMessageElement, error) {
 //	xml := ""
 //	var suf message.IMessageElement
 //	if brief == "" {

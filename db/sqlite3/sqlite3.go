@@ -11,10 +11,11 @@ import (
 	sql "github.com/FloatTech/sqlite"
 	"github.com/LagrangeDev/LagrangeGo/utils"
 	"github.com/LagrangeDev/LagrangeGo/utils/binary"
-	"github.com/Mrs4s/go-cqhttp/db"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
+
+	"github.com/Mrs4s/go-cqhttp/db"
 )
 
 type database struct {
