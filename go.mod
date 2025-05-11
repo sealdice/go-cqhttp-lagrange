@@ -1,6 +1,6 @@
 module github.com/Mrs4s/go-cqhttp
 
-go 1.20
+go 1.22
 
 require (
 	github.com/FloatTech/sqlite v1.6.3
